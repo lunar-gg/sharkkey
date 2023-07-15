@@ -1,0 +1,2 @@
+# sharkkey
+ 🦈🔑 - Resonably secure encryption :)

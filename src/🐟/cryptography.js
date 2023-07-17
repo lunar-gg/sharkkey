@@ -1,4 +1,4 @@
-import * as readline from 'node:readline/promises'; // This uses the promise-based APIs
+import readline from 'readline/promises'
 import { stdin as input, stdout as output } from 'node:process';
 import CryptoJS from 'crypto-js'
 import crypto from 'crypto'

@@ -3,6 +3,9 @@
 
 ## Resonably secure encryption
 
+Changelog 7/17/23 13~ :
+* TOTP (Time-based one time password) (example: Google Authentacater)
+* Completely removed all MD5 ussage to be safe against collision attacks
 
 Changelog 7/17/23 12~ :
 * Added --copy & --string that allows copying results to clipboard, and encrypting and decrypting of strings instead of files.
@@ -10,7 +13,6 @@ Changelog 7/17/23 12~ :
 * Prettified* console output
 
 Upcomming:
-* TOTP (Time-based one time password) (example: Google Authentacater)
 * Directory encryption \ decryption (zip, encrypt zip w extra metadata)
 * Save and load password from env, then use with --saved / -sv
 * Write docs

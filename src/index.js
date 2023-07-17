@@ -1,7 +1,6 @@
 import shark from './🦈.js'
 import { Command } from 'commander'
-console.vlog = shark.vlog
-
+import process from 'node:process';
 const program = new Command()
     .name("sharkkey")
     .description(shark.art())
@@ -41,6 +40,8 @@ program
         "Include the serial number of the device as part of the encryption process")
     .option('--filename',
         "Include the name of the file being encrypted as part of the encryption process")
+    .option('--totp',
+        "Require TOTP authentacation before decrypting")
     .action(async(file, pass, options) => {
         let features = []
         for (const opt in options) {
@@ -55,16 +56,16 @@ program
             pass,
             features,
             options.createID ||
-            !typeof options.createID === "undefined",
+            typeof options.createID !== "undefined",
             file)
         try {
             let infoStrFile = `✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨
             Filename: ${file}
             Key: ${hashKey}
             Features: ${features}
-            Deleted Original: ${options.deleteOriginal || !typeof options.deleteOriginal === "undefined"}
-            Created ID: ${options.createID || !typeof options.createID === "undefined"}
-            
+            Deleted Original: ${options.deleteOriginal || typeof options.deleteOriginal !== "undefined"}
+            Created ID: ${options.createID || typeof options.createID !== "undefined"}
+            TOTP: ${options.totp || false}
             Remember never to share the Key with anyone,
             as they would be able to decrypt your file with it.
             
@@ -81,14 +82,13 @@ program
             
             You can decrypt the string using 🦈🔑 & your password
             ✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨`
-            if (options.string || !typeof options.string === "undefined") {
+            if (options.string || typeof options.string !== "undefined") {
                 let encryptedStr = await shark.cryptography.encrypt(hashKey,
                     file,
-                    options.deleteOriginal || !typeof options.deleteOriginal === "undefined",
+                    options.deleteOriginal || typeof options.deleteOriginal !== "undefined",
                     features,
-                    options.createID || !typeof options.createID === "undefined",
-                    `${file}.🦈🔑🪪`,
-                    options.string || !typeof options.string === "undefined", options.copy || false)
+                    options.createID || typeof options.createID !== "undefined",
+                    options.string || typeof options.string !== "undefined", options.copy || false)
                 if (options.copy || false) {
                     console.log(infoStr.replace(new RegExp(/(?!\\n) +/g), "")
                         .replace("__string__", encryptedStr)
@@ -103,18 +103,17 @@ program
             } else {
                 await shark.cryptography.encrypt(hashKey,
                     file,
-                    options.deleteOriginal || !typeof options.deleteOriginal === "undefined",
+                    options.deleteOriginal || typeof options.deleteOriginal !== "undefined",
                     features,
-                    options.createID || !typeof options.createID === "undefined",
-                    `${file}.🦈🔑🪪`,
+                    options.createID || typeof options.createID !== "undefined",
                     false,
                     options.copy || false)
                 if (options.copy || false) {
-                    console.log(infoStrFile.replace(new RegExp(/            /g), "")
+                    console.log(infoStrFile.replace(new RegExp(/ {12}/g), "")
                         .replace("Remember", "The contents of the encrypted file has been copied to your clipboard.\n\nRemember")
                     )
                 } else {
-                    console.log(infoStrFile.replace(new RegExp(/            /g), ""))
+                    console.log(infoStrFile.replace(new RegExp(/ {12}/g), ""))
                 }
 
             }
@@ -158,7 +157,7 @@ program
                 var originalText = await shark.cryptography.decrypt(
                     pass,
                     file,
-                    options.deleteOriginal || !typeof options.deleteOriginal === "undefined",
+                    options.deleteOriginal || typeof options.deleteOriginal !== "undefined",
                     true,
                     options.copy || false
                 )
@@ -177,17 +176,17 @@ program
                 await shark.cryptography.decrypt(
                     pass,
                     file,
-                    options.deleteOriginal || !typeof options.deleteOriginal === "undefined",
+                    options.deleteOriginal || typeof options.deleteOriginal !== "undefined",
                     options.string || false,
                     options.copy || false
                 )
                 if (options.copy || false) {
                     console.log(infoStrFile
-                        .replace(new RegExp(/                /g), "")
+                        .replace(new RegExp(/ {16}/g), "")
                         .replace("🦈🔑\n✨", "The content of the decrypted file has been copied to your clipboard\n\n🦈🔑\n✨"))
                 } else {
                     console.log(infoStrFile
-                        .replace(new RegExp(/                /g), "")
+                        .replace(new RegExp(/ {16}/g), "")
                     )
                 }
             }

@@ -1,3 +1,5 @@
+import * as readline from 'node:readline/promises'; // This uses the promise-based APIs
+import { stdin as input, stdout as output } from 'node:process';
 import CryptoJS from 'crypto-js'
 import crypto from 'crypto'
 import md6Hash from 'md6-hash';
@@ -7,11 +9,13 @@ import ip from 'ip'
 import os from 'os'
 import yesno from 'yesno';
 import si from 'systeminformation'
-import path from 'path'
 import fs from 'fs'
+import path from 'path'
+import base32 from 'thirty-two'
 import clipboard from 'clipboardy'
-import { execSync } from 'child_process'
-import compression from './compression.js';
+import qrcode from 'qrcode-terminal'
+import process from 'process'
+import { Buffer } from 'node:buffer';
 /**
  * Contains cryptographic functions for 🦈.js
  */
@@ -44,12 +48,8 @@ class cryptography {
          */
         static getFileMD5(filePath) {
                 const fileBuffer = fs.readFileSync(filePath);
-                const hash = crypto.createHash('md5').update(fileBuffer).digest('hex');
+                const hash = cryptography.hash.getMD6(fileBuffer, 128)
                 return hash;
-            }
-            /** N: use getMD6() instead if needed for anything secure. */
-        static getMD5(string) {
-                CryptoJS.MD5(key).toString();
             }
             /**
              * Function to hash a string using the MD6 algorithm
@@ -171,7 +171,6 @@ class cryptography {
                     cryptography.shift.doShift(baseHash.slice(64, 96)),
                     cryptography.shift.doShift(baseHash.slice(96, 128))
                 ];
-                console.log(shiftedHashParts)
                 let shiftedCombinedHashes = crypto.createHash('shake256', { outputLength: 64 }).update(
                     cryptography.shift.doShift(
                         crypto.createHash('shake256')
@@ -306,23 +305,23 @@ class cryptography {
         }
         // Work with the MD6 hash of the user's chosen key
         // TODO: change var names to reflect the change to MD6 from MD5
-        let md5key = cryptography.hash.getMD6(key, 128)
-        console.vlog("md5 0", md5key)
-        md5key = cryptography.handle.md5(md5key)
-        console.vlog("md5 1", md5key)
-        md5key = CryptoJS.MD5(md5key).toString()
-        console.vlog("md5 2", md5key)
-        md5key = cryptography.handle.md5(md5key)
-        console.vlog("md5 3", md5key)
+        let md6key = cryptography.hash.getMD6(key, 128)
+        console.vlog("md6 0", md6key)
+        md6key = cryptography.handle.md6(md6key)
+        console.vlog("md6 1", md6key)
+        md6key = cryptography.hash.getMD6(md6key, 128)
+        console.vlog("md6 2", md6key)
+        md6key = cryptography.handle.md6(md6key)
+        console.vlog("md6 3", md6key)
 
         console.vlog({
             halfId,
-            md5key,
+            md6key,
             halfId2
         })
 
         // Combine everything and shift by the value of the first integer found in the combined string
-        let combined = `${halfId}${md5key}${halfId2}`
+        let combined = `${halfId}${md6key}${halfId2}`
         console.vlog(combined)
         let final = cryptography.shift.doShift(combined)
         return final
@@ -345,7 +344,7 @@ class cryptography {
         }
     }
     static handle = class {
-        static md5(md5key) {
+        static md6(md5key) {
             console.vlog(md5key)
 
             // Reverse md5
@@ -433,7 +432,7 @@ class cryptography {
             let obfuscatedString = '';
             for (let i = 0; i < hexString.length; i++) {
                 const hexDigit = hexString[i];
-                if (hexMapping.hasOwnProperty(hexDigit)) {
+                if (Object.prototype.hasOwnProperty.call(hexMapping, hexDigit)) {
                     obfuscatedString += hexMapping[hexDigit];
                 } else {
                     obfuscatedString += hexDigit;
@@ -464,7 +463,7 @@ class cryptography {
             let deobfuscatedString = '';
             for (let i = 0; i < obfuscatedHex.length; i++) {
                 const hexDigit = obfuscatedHex[i];
-                if (hexMapping.hasOwnProperty(hexDigit)) {
+                if (Object.prototype.hasOwnProperty.call(hexMapping)) {
                     deobfuscatedString += hexMapping[hexDigit];
                 } else {
                     deobfuscatedString += hexDigit;
@@ -472,119 +471,6 @@ class cryptography {
             }
             return deobfuscatedString;
         };
-        /*
-        static obfuscateHexString(hexString) {
-                const hexMapping = { '0': 'f', '1': 'e', '2': 'd', '3': 'c', '4': 'b', '5': 'a', '6': '9', '7': '8', '8': '7', '9': '6', 'a': '5', 'b': '4', 'c': '3', 'd': '2', 'e': '1', 'f': '0' };
-                let obfuscatedString = hexString
-                    .split('')
-                    .map(hex => hexMapping[hex]) // replace each digit
-                    .reverse() // reverse string
-                    .join('');
-
-                // swap every two digits
-                let swappedString = '';
-                for (let i = 0; i < obfuscatedString.length; i += 2) {
-                    swappedString += (obfuscatedString[i + 1] || '') + obfuscatedString[i];
-                }
-
-                // split string into four parts and swap
-                let chunkSize = Math.floor(swappedString.length / 4);
-                let parts = [
-                    swappedString.slice(0, chunkSize),
-                    swappedString.slice(chunkSize, 2 * chunkSize),
-                    swappedString.slice(2 * chunkSize, 3 * chunkSize),
-                    swappedString.slice(3 * chunkSize)
-                ];
-                swappedString = parts[3] + parts[2] + parts[1] + parts[0];
-
-                // shift string one position to the right
-                swappedString = swappedString[swappedString.length - 1] + swappedString.slice(0, swappedString.length - 1);
-
-                // split string into four parts and swap again
-                parts = [
-                    swappedString.slice(0, chunkSize),
-                    swappedString.slice(chunkSize, 2 * chunkSize),
-                    swappedString.slice(2 * chunkSize, 3 * chunkSize),
-                    swappedString.slice(3 * chunkSize)
-                ];
-                swappedString = parts[2] + parts[3] + parts[0] + parts[1];
-
-                return swappedString;
-            }
-     
-            static deobfuscateHexString(obfuscatedHex) {
-                const hexMapping = { 'f': '0', 'e': '1', 'd': '2', 'c': '3', 'b': '4', 'a': '5', '9': '6', '8': '7', '7': '8', '6': '9', '5': 'a', '4': 'b', '3': 'c', '2': 'd', '1': 'e', '0': 'f' };
-
-                // split string into four parts and swap
-                let chunkSize = Math.floor(obfuscatedHex.length / 4);
-                let parts = [
-                    obfuscatedHex.slice(0, chunkSize),
-                    obfuscatedHex.slice(chunkSize, 2 * chunkSize),
-                    obfuscatedHex.slice(2 * chunkSize, 3 * chunkSize),
-                    obfuscatedHex.slice(3 * chunkSize)
-                ];
-                obfuscatedHex = parts[2] + parts[3] + parts[0] + parts[1];
-
-                // shift string one position to the left
-                obfuscatedHex = obfuscatedHex.slice(1) + obfuscatedHex[0];
-
-                // split string into four parts and swap
-                parts = [
-                    obfuscatedHex.slice(0, chunkSize),
-                    obfuscatedHex.slice(chunkSize, 2 * chunkSize),
-                    obfuscatedHex.slice(2 * chunkSize, 3 * chunkSize),
-                    obfuscatedHex.slice(3 * chunkSize)
-                ];
-                obfuscatedHex = parts[3] + parts[2] + parts[1] + parts[0];
-
-                // swap every two digits
-                let swappedString = '';
-                for (let i = 0; i < obfuscatedHex.length; i += 2) {
-                    swappedString += (obfuscatedHex[i + 1] || '') + obfuscatedHex[i];
-                }
-
-                let deobfuscatedHex = swappedString
-                    .split('')
-                    .reverse() // reverse string
-                    .map(hex => hexMapping[hex]) // replace each digit
-                    .join('');
-
-                return deobfuscatedHex;
-            }
-        static unobfuscateHexString(obfuscatedHex) {
-            const hexMapping = {
-                'f': '0',
-                'e': '1',
-                'd': '2',
-                'c': '3',
-                'b': '4',
-                'a': '5',
-                '9': '6',
-                '8': '7',
-                '7': '8',
-                '6': '9',
-                '5': 'a',
-                '4': 'b',
-                '3': 'c',
-                '2': 'd',
-                '1': 'e',
-                '0': 'f'
-            };
-
-            let deobfuscatedString = '';
-            for (let i = 0; i < obfuscatedHex.length; i++) {
-                const hexDigit = obfuscatedHex[i];
-                if (hexMapping.hasOwnProperty(hexDigit)) {
-                    deobfuscatedString += hexMapping[hexDigit];
-                } else {
-                    deobfuscatedString += hexDigit;
-                }
-            }
-
-            return deobfuscatedString;
-        }
-*/
-
     }
     static object = class {
         static encryptObject(obj, passphrase) {
@@ -637,21 +523,35 @@ class cryptography {
             const obfuscatedHex = rawData.toString('utf8');
 
             const unobfuscatedHex = cryptography.hex.unobfuscateHexString(obfuscatedHex);
-            console.log(unobfuscatedHex)
             const decodedString = unobfuscatedHex.hexDecode()
             const parsedObject = JSON.parse(decodedString);
             return parsedObject;
         }
 
-        static writeFileObject(rawEncrypted, features = [], file) {
+        static writeFileObject(rawEncrypted, features = [], file, useTOTP, key) {
             var showFile = "Hidden"
             if (features.includes("filename")) { showFile = file }
-            let jsonData = {
+            var jsonData = {
                 "raw": `${rawEncrypted}`,
                 "file": showFile,
                 "features": features
             }
-            console.log(jsonData)
+            if (useTOTP) {
+                jsonData.TOTP = true
+                    // Hash the pw using fish128
+                let hashedKey = cryptography.hash.fish128(key, "utf8")
+                    // base32 encode
+                let b32key = base32.encode(hashedKey).toString().replace(/=/g, "")
+                    // create otp
+                let otp = new cryptography.totp(b32key)
+                let gaUrl = otp.gaURL(decodeURIComponent(path.basename(file).replace(/\./g, "_")), encodeURIComponent(os.userInfo().username + "@🦈🔑"))
+                console.log("✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨")
+                qrcode.generate(gaUrl, { small: true });
+                console.log("Scan above QR code with Google Authenticator, or go to the url manually, or use the key in your auth app of choice.")
+                console.log("URL:", gaUrl)
+                console.log("Key:", b32key)
+            }
+
             let hexString = JSON.stringify(jsonData, null, 4).hexEncode()
             return cryptography.hex.obfuscateHexString(hexString)
         }
@@ -664,7 +564,7 @@ class cryptography {
      * @param {boolean} deleteOriginal 
      * @param {string[]} [features=[]] 
      */
-    static async encrypt(key, file, deleteOriginal = false, features = [], createIDFile = false, idFile = '', isString = false, doCopy = false) {
+    static async encrypt(key, file, deleteOriginal = false, features = [], createIDFile = false, isString = false, doCopy = false) {
         // Basic error checking in encrypt flow
         try {
             var fileData;
@@ -674,11 +574,11 @@ class cryptography {
                 fileData = fs.readFileSync(file, "utf8")
             }
 
-            let buff = crypto.createCipheriv('aes-256-cbc', cryptography.hash.fish64(key, "utf8", false), cryptography.hash.fish64(key, "utf8", true))
+            let buff = crypto.createCipheriv('aes-256-gcm', cryptography.hash.fish64(key, "utf8", false), cryptography.hash.fish64(key, "utf8", true))
             var rawEncrypted = Buffer.from(
                     buff.update(fileData, 'utf8', 'hex') + buff.final('hex')
                 ).toString('base64') // Encrypts data and converts to hex and base64
-            var encrypted = cryptography.object.writeFileObject(rawEncrypted, features, file)
+            var encrypted = cryptography.object.writeFileObject(rawEncrypted, features, file, features.includes("totp") || false, key)
             encrypted = btoa(encrypted)
         } catch (err) {
             // how 
@@ -731,9 +631,7 @@ class cryptography {
                             process.exit(0)
                             break;
                         default:
-                            console.vlog("You chose not to overwrite the file, please rename or move the file yourself, and then try again.")
-                            process.exit(0)
-                            break;
+                            throw new Error("You chose not to overwrite the file.");
                     }
                 } else {
                     fs.writeFileSync(file + '.🦈🔑', encrypted, "utf8")
@@ -784,8 +682,6 @@ class cryptography {
         // User forgot their key
         // The HWID dosnt match up, meaning this is not the old machine
         // Could also be caused by HWID changing randomly.
-        // TODO: Implement "unlock" files that can unencrypt on other machine
-        // by storing hwid in .sharkkeyPublic (maybe)
         try {
             let rawFileData;
             if (isString) {
@@ -795,10 +691,10 @@ class cryptography {
             }
 
             let jsonData = cryptography.object.readFileObject(rawFileData)
-            console.log(jsonData)
+
             let hashKey = await cryptography.calculateKey(key, jsonData.features, false)
             const buff = Buffer.from(jsonData.raw, 'base64')
-            const decipher = crypto.createDecipheriv('aes-256-cbc',
+            const decipher = crypto.createDecipheriv('aes-256-gcm',
                 cryptography.hash.fish64(hashKey, "utf8", false),
                 cryptography.hash.fish64(hashKey, "utf8", true))
 
@@ -807,7 +703,26 @@ class cryptography {
                     'hex',
                     'utf8') +
                 decipher.final('utf8');
+            if (jsonData.TOTP) {
+                // Hash the pw using fish64
+                let hashedKey = cryptography.hash.fish128(hashKey, "utf8")
+                    // base32 encode
+                let b32key = base32.encode(hashedKey).toString().replace(/=/g, "")
+                    // create otp
+                let otp = new cryptography.totp(b32key)
+                let userotp;
+                const rl = readline.createInterface({ input, output });
 
+                const answer = await rl.question('Enter the code found in your authenticator app ');
+                userotp = `${answer}`
+                rl.close();
+
+                if (`${otp.genOTP()}` === `${userotp}`) {
+                    console.log("Authenticated!")
+                } else {
+                    throw new Error("Incorrect TOTP")
+                }
+            }
             var originalText = final
             if (isString) {
                 if (doCopy) {
@@ -840,9 +755,6 @@ class cryptography {
                         /** 
                          * Exit here unless true, as we cant continue.
                          */
-                    case false:
-                        console.vlog("You chose not to overwrite the file, please rename or move the file yourself, and then try again.")
-                        process.exit(0)
                     default:
                         console.vlog("You chose not to overwrite the file, please rename or move the file yourself, and then try again.")
                         process.exit(0)

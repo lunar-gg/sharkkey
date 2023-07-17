@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16' # Replace with your desired Node.js version
+          node-version: '20.2' # Replace with your desired Node.js version
       - name: Install esbuild, jest & pkg
         run: npm install --save-exact esbuild && npm i jest --save-dev && npm i -g pkg
       - name: Install Dependencies

@@ -49,6 +49,7 @@ program
                 features.push(opt)
             }
         }
+
         if (features.length == 0) {
             features.push("None, this means anyone with the password can decrypt.")
         }

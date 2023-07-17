@@ -19,7 +19,7 @@ import { Buffer } from 'node:buffer';
 /**
  * Contains cryptographic functions for 🦈.js
  */
-console.vlog = console.log
+console.vlog = (() => {})
 var idObjectFile;
 String.prototype.hexEncode = function() {
     var hex, i;
@@ -42,21 +42,12 @@ String.prototype.hexDecode = function() {
 
 class cryptography {
     static hash = class {
-        /** Use for checksums only 
-         * @param {string} filePath Path to file
-         * @returns {string} MD5 hash
+        /**
+         * Function to hash a string using the MD6 algorithm
+         * @param {string} string Message to hash 
+         * @param {number} size Size, 0 (Recomended:at least 128) - 512 | 0 < d ≤ 512 bits
+         * @returns {string} MD6 hashed string
          */
-        static getFileMD5(filePath) {
-                const fileBuffer = fs.readFileSync(filePath);
-                const hash = cryptography.hash.getMD6(fileBuffer, 128)
-                return hash;
-            }
-            /**
-             * Function to hash a string using the MD6 algorithm
-             * @param {string} string Message to hash 
-             * @param {number} size Size, 0 (Recomended:at least 128) - 512 | 0 < d ≤ 512 bits
-             * @returns {string} MD6 hashed string
-             */
         static getMD6(string, size) {
             return md6Hash(string, { size: size })
         }
@@ -298,7 +289,7 @@ class cryptography {
                     1: halfId2
                 },
                 "associatedFiles": [
-                    { filename: filePath.filename, md5: cryptography.hash.getFileMD5(file) }
+                    { filename: filePath.filename, md5: cryptography.hash.fish64(fs.readFileSync(file, "utf8")) }
                 ],
                 "expires": `${expiresTimestamp}`
             }
@@ -345,7 +336,7 @@ class cryptography {
     }
     static handle = class {
         static md6(md5key) {
-            console.vlog(md5key)
+            console.vlog("-md6", md5key)
 
             // Reverse md5
             md5key = md5key.split("").reverse().join("")
@@ -432,7 +423,7 @@ class cryptography {
             let obfuscatedString = '';
             for (let i = 0; i < hexString.length; i++) {
                 const hexDigit = hexString[i];
-                if (Object.prototype.hasOwnProperty.call(hexMapping, hexDigit)) {
+                if (hexMapping.hasOwnProperty(hexDigit)) {
                     obfuscatedString += hexMapping[hexDigit];
                 } else {
                     obfuscatedString += hexDigit;
@@ -463,7 +454,7 @@ class cryptography {
             let deobfuscatedString = '';
             for (let i = 0; i < obfuscatedHex.length; i++) {
                 const hexDigit = obfuscatedHex[i];
-                if (Object.prototype.hasOwnProperty.call(hexMapping)) {
+                if (hexMapping.hasOwnProperty(hexDigit)) {
                     deobfuscatedString += hexMapping[hexDigit];
                 } else {
                     deobfuscatedString += hexDigit;
@@ -473,112 +464,171 @@ class cryptography {
         };
     }
     static object = class {
-        static encryptObject(obj, passphrase) {
-            const jsonString = JSON.stringify(obj);
-            const parsedKey = cryptography.getKeyFromPassphrase(passphrase);
-            let encryptedString = CryptoJS.AES.encrypt(jsonString, parsedKey, {
-                mode: CryptoJS.mode.ECB,
-                padding: CryptoJS.pad.Pkcs7
-            });
-            // Convert the encrypted string to hex before obfuscation
-            encryptedString = CryptoJS.enc.Hex.stringify(encryptedString.ciphertext);
-            encryptedString = cryptography.hex.obfuscateHexString(encryptedString);
-            return encryptedString;
-        }
-        static decryptObject(passphrase, id) {
-            const parsedKey = cryptography.getKeyFromPassphrase(passphrase);
-            let encryptedString = id;
-            encryptedString = cryptography.hex.unobfuscateHexString(encryptedString);
-            // Convert the deobfuscated hex string back to base64
-            encryptedString = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Hex.parse(encryptedString));
-            const bytes = CryptoJS.AES.decrypt(encryptedString, parsedKey, {
-                mode: CryptoJS.mode.ECB,
-                padding: CryptoJS.pad.Pkcs7
-            });
-            const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
-            const IDObject = JSON.parse(decryptedString);
-            return IDObject;
-        }
-        static addExpire(duration, unit) {
-            const expirationDate = new Date();
+            static encryptObject(obj, passphrase) {
+                const jsonString = JSON.stringify(obj);
+                const parsedKey = cryptography.getKeyFromPassphrase(passphrase);
+                let encryptedString = CryptoJS.AES.encrypt(jsonString, parsedKey, {
+                    mode: CryptoJS.mode.ECB,
+                    padding: CryptoJS.pad.Pkcs7
+                });
+                // Convert the encrypted string to hex before obfuscation
+                encryptedString = CryptoJS.enc.Hex.stringify(encryptedString.ciphertext);
+                encryptedString = cryptography.hex.obfuscateHexString(encryptedString);
+                return encryptedString;
+            }
+            static decryptObject(passphrase, id) {
+                const parsedKey = cryptography.getKeyFromPassphrase(passphrase);
+                let encryptedString = id;
+                encryptedString = cryptography.hex.unobfuscateHexString(encryptedString);
+                // Convert the deobfuscated hex string back to base64
+                encryptedString = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Hex.parse(encryptedString));
+                const bytes = CryptoJS.AES.decrypt(encryptedString, parsedKey, {
+                    mode: CryptoJS.mode.ECB,
+                    padding: CryptoJS.pad.Pkcs7
+                });
+                const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+                const IDObject = JSON.parse(decryptedString);
+                return IDObject;
+            }
+            static addExpire(duration, unit) {
+                const expirationDate = new Date();
 
-            if (unit === 'hours') {
-                expirationDate.setHours(expirationDate.getHours() + duration);
-            } else if (unit === 'days') {
-                expirationDate.setDate(expirationDate.getDate() + duration);
-            } else if (unit === 'years') {
-                expirationDate.setFullYear(expirationDate.getFullYear() + duration);
+                if (unit === 'hours') {
+                    expirationDate.setHours(expirationDate.getHours() + duration);
+                } else if (unit === 'days') {
+                    expirationDate.setDate(expirationDate.getDate() + duration);
+                } else if (unit === 'years') {
+                    expirationDate.setFullYear(expirationDate.getFullYear() + duration);
+                }
+
+                return expirationDate;
+            }
+            static hasExpired(jsonObject) {
+                if (jsonObject.expires instanceof Date) {
+                    const currentTime = new Date();
+                    return currentTime > jsonObject.expires;
+                }
+                return false;
+            }
+            static readFileObject(rawData) {
+                const obfuscatedHex = rawData.toString('utf8');
+
+                const unobfuscatedHex = cryptography.hex.unobfuscateHexString(obfuscatedHex);
+
+                const decodedString = unobfuscatedHex.hexDecode()
+
+                const parsedObject = JSON.parse(decodedString);
+                return parsedObject;
             }
 
-            return expirationDate;
-        }
-        static hasExpired(jsonObject) {
-            if (jsonObject.expires instanceof Date) {
-                const currentTime = new Date();
-                return currentTime > jsonObject.expires;
+            static writeFileObject(rawEncrypted, features = [], file, useTOTP, key) {
+                var showFile = "Hidden"
+                if (features.includes("filename")) { showFile = file }
+                var jsonData = {
+                    "raw": `${rawEncrypted}`,
+                    "file": showFile,
+                    "features": features,
+                    "TOTP": false
+                }
+                if (useTOTP) {
+                    jsonData.TOTP = true
+                        // Hash the pw using fish128
+                    let hashedKey = cryptography.hash.fish128(key, "utf8")
+                        // base32 encode
+                    let b32key = base32.encode(hashedKey).toString().replace(/=/g, "")
+                        // create otp
+                    let otp = new cryptography.totp(b32key)
+                    let gaUrl = otp.gaURL(decodeURIComponent(path.basename(file).replace(/\./g, "_")), encodeURIComponent(os.userInfo().username + "@🦈🔑"))
+                    console.log("✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨")
+                    qrcode.generate(gaUrl, { small: true });
+                    console.log("Scan above QR code with Google Authenticator, or go to the url manually, or use the key in your auth app of choice.")
+                    console.log("URL:", gaUrl)
+                    console.log("Key:", b32key)
+                }
+
+                let hexString = JSON.stringify(jsonData, null, 4).hexEncode()
+                return cryptography.hex.obfuscateHexString(hexString)
             }
-            return false;
         }
-        static readFileObject(rawData) {
-            const obfuscatedHex = rawData.toString('utf8');
+        /**
+         * Encrypts text by given key
+         * @param String text to encrypt
+         * @param Buffer masterkey
+         * @returns String encrypted text, base64 encoded
+         */
+    static aese(text, key, iv) {
+            try {
+                console.log(text, key)
+                console.log(iv)
+                    // derive key: 32 byte key length - in assumption the masterkey is a cryptographic and NOT a password there is no need for
+                    // a large number of iterations. It may can replaced by HKDF
+                    // AES 256 GCM Mode
+                var cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
 
-            const unobfuscatedHex = cryptography.hex.unobfuscateHexString(obfuscatedHex);
-            const decodedString = unobfuscatedHex.hexDecode()
-            const parsedObject = JSON.parse(decodedString);
-            return parsedObject;
-        }
+                // encrypt the given text
+                var encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
+                // extract the auth tag
+                var tag = cipher.getAuthTag() // 16c
+                    // generate output
+                return Buffer.concat([Buffer.from(iv, "hex"), tag, encrypted]).toString("base64")
 
-        static writeFileObject(rawEncrypted, features = [], file, useTOTP, key) {
-            var showFile = "Hidden"
-            if (features.includes("filename")) { showFile = file }
-            var jsonData = {
-                "raw": `${rawEncrypted}`,
-                "file": showFile,
-                "features": features
-            }
-            if (useTOTP) {
-                jsonData.TOTP = true
-                    // Hash the pw using fish128
-                let hashedKey = cryptography.hash.fish128(key, "utf8")
-                    // base32 encode
-                let b32key = base32.encode(hashedKey).toString().replace(/=/g, "")
-                    // create otp
-                let otp = new cryptography.totp(b32key)
-                let gaUrl = otp.gaURL(decodeURIComponent(path.basename(file).replace(/\./g, "_")), encodeURIComponent(os.userInfo().username + "@🦈🔑"))
-                console.log("✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨")
-                qrcode.generate(gaUrl, { small: true });
-                console.log("Scan above QR code with Google Authenticator, or go to the url manually, or use the key in your auth app of choice.")
-                console.log("URL:", gaUrl)
-                console.log("Key:", b32key)
+            } catch (e) {
+                console.log(e)
             }
 
-            let hexString = JSON.stringify(jsonData, null, 4).hexEncode()
-            return cryptography.hex.obfuscateHexString(hexString)
+            // error
+            return null;
         }
-    }
+        /**
+         * Decrypts text by given key
+         * @param String base64 encoded input data
+         * @param Buffer masterkey
+         * @returns String decrypted (original) text
+         */
+    static aesd(data, key, iv) {
+            console.log("owo", data, key, iv)
+            try {
+                // base64 decoding
+                var bData = new Buffer.from(data, 'base64');
+                // random initialization vector
+                var tag = bData.slice(iv.length, iv.length + 16);
+                var text = bData.slice(iv.length + 16);
+                console.log(bData.toString(), tag.toString(), text.toString())
+                    // AES 256 GCM Mode
+                var decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+                decipher.setAuthTag(tag);
 
-    /**
-     * Encrypts file
-     * @param {string} key 
-     * @param {string} file 
-     * @param {boolean} deleteOriginal 
-     * @param {string[]} [features=[]] 
-     */
+                // encrypt the given text
+                var decrypted = decipher.update(text, 'binary', 'utf8') + decipher.final('utf8');
+
+                return Buffer.from(decrypted).toString("utf8");
+
+            } catch (e) {}
+
+            // error
+            return null;
+        }
+        /**
+         * Encrypts file
+         * @param {string} key 
+         * @param {string} file 
+         * @param {boolean} deleteOriginal 
+         * @param {string[]} [features=[]] 
+         */
     static async encrypt(key, file, deleteOriginal = false, features = [], createIDFile = false, isString = false, doCopy = false) {
         // Basic error checking in encrypt flow
         try {
             var fileData;
             if (isString) {
-                fileData = file
+                fileData = Buffer.from(file, "utf8").toString("utf8")
             } else {
                 fileData = fs.readFileSync(file, "utf8")
             }
-
-            let buff = crypto.createCipheriv('aes-256-gcm', cryptography.hash.fish64(key, "utf8", false), cryptography.hash.fish64(key, "utf8", true))
+            let buff = crypto.createCipheriv('aes-256-cbc', cryptography.hash.fish64(key, "utf8", false), cryptography.hash.fish64(key, "utf8", true))
             var rawEncrypted = Buffer.from(
                     buff.update(fileData, 'utf8', 'hex') + buff.final('hex')
                 ).toString('base64') // Encrypts data and converts to hex and base64
-            var encrypted = cryptography.object.writeFileObject(rawEncrypted, features, file, features.includes("totp") || false, key)
+            var encrypted = cryptography.object.writeFileObject(rawEncrypted, features, file)
             encrypted = btoa(encrypted)
         } catch (err) {
             // how 
@@ -592,7 +642,7 @@ class cryptography {
                 if (doCopy) {
                     clipboard.writeSync(encrypted)
                 }
-                return btoa(encrypted)
+                return encrypted
             } else {
                 // We are encrypting a file
                 /**
@@ -667,6 +717,7 @@ class cryptography {
             console.log("Error deleting original file")
             console.error(err)
         }
+        return fs.existsSync(file + '.🦈🔑')
     }
 
     /**
@@ -674,6 +725,8 @@ class cryptography {
      * @param {string} key 
      * @param {string} file 
      * @param {boolean} deleteOriginal 
+     * @param {boolean} [isString=false] 
+     * @param {boolean} [doCopy=false] 
      */
     static async decrypt(key, file, deleteOriginal = false, isString = false, doCopy = false) {
         // Basic error checking in decrypt flow
@@ -683,18 +736,17 @@ class cryptography {
         // The HWID dosnt match up, meaning this is not the old machine
         // Could also be caused by HWID changing randomly.
         try {
-            let rawFileData;
+            var rawFileData;
             if (isString) {
-                rawFileData = atob(file)
+                rawFileData = atob(Buffer.from(file, "utf8").toString("utf8"))
             } else {
                 rawFileData = atob(fs.readFileSync(file, "utf8"))
             }
-
             let jsonData = cryptography.object.readFileObject(rawFileData)
-
-            let hashKey = await cryptography.calculateKey(key, jsonData.features, false)
+            console.log(jsonData)
+            var hashKey = await cryptography.calculateKey(key, jsonData.features, false)
             const buff = Buffer.from(jsonData.raw, 'base64')
-            const decipher = crypto.createDecipheriv('aes-256-gcm',
+            const decipher = crypto.createDecipheriv('aes-256-cbc',
                 cryptography.hash.fish64(hashKey, "utf8", false),
                 cryptography.hash.fish64(hashKey, "utf8", true))
 
@@ -703,11 +755,10 @@ class cryptography {
                     'hex',
                     'utf8') +
                 decipher.final('utf8');
+
             if (jsonData.TOTP) {
-                // Hash the pw using fish64
-                let hashedKey = cryptography.hash.fish128(hashKey, "utf8")
-                    // base32 encode
-                let b32key = base32.encode(hashedKey).toString().replace(/=/g, "")
+                // base32 encode
+                let b32key = base32.encode(hashKey).toString().replace(/=/g, "")
                     // create otp
                 let otp = new cryptography.totp(b32key)
                 let userotp;
@@ -733,7 +784,8 @@ class cryptography {
         } catch (err) {
             console.log("Error decrypting file. Have you entered the correct key?")
             console.error(err)
-            process.exit(0)
+            throw new Error(err)
+
         }
         /**
          * Basic check to see if the file we are going to
@@ -779,6 +831,7 @@ class cryptography {
             // something went wrong, most likely permissions, or file already being used (somehow)
             console.log("Error deleting original file")
         }
+        return fs.existsSync(file.replace('.🦈🔑', ''))
     }
     static totp = TOTP
     static checkid(file, key, doCopy = false) {

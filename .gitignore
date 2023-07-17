@@ -1,8 +1,10 @@
 # Logs
 dist
 bundle
+coverage
 logs
 *.log
+tem.js
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

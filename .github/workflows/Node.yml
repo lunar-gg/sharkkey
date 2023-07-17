@@ -26,15 +26,17 @@ jobs:
       - name: Install pkg
         run: npm i -g pkg
 
-      - name: Install esbuild
-        run: npm install --save-exact esbuild
+      - name: Install esbuild & jest
+        run: npm install --save-exact esbuild && npm i jest --save-dev
         
       - name: Install Dependencies
         run: npm ci
 
       - name: Build
         run: npm run build
-        
+      - name: test
+        run: npm run test
+
       - name: upload
         run: gh release create wip-${{ github.sha }} ./dist/* --generate-notes
         env:

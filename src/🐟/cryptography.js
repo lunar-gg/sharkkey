@@ -317,12 +317,6 @@ class cryptography {
         return final
     }
     static shift = class {
-        static doShiftReverse(str) {
-            let shiftTimes = str.match(/\d/)[0];
-            let shiftAmount = str.length - (shiftTimes % str.length);
-            let shifted = str.slice(shiftAmount) + str.slice(0, shiftAmount);
-            return shifted;
-        }
         static doShift(str) {
             // Get first integer in string
             let shiftTimes = str.match(/\d/)[0];
@@ -463,157 +457,101 @@ class cryptography {
         };
     }
     static object = class {
-            static encryptObject(obj, passphrase) {
-                const jsonString = JSON.stringify(obj);
-                const parsedKey = cryptography.getKeyFromPassphrase(passphrase);
-                let encryptedString = CryptoJS.AES.encrypt(jsonString, parsedKey, {
-                    mode: CryptoJS.mode.ECB,
-                    padding: CryptoJS.pad.Pkcs7
-                });
-                // Convert the encrypted string to hex before obfuscation
-                encryptedString = CryptoJS.enc.Hex.stringify(encryptedString.ciphertext);
-                encryptedString = cryptography.hex.obfuscateHexString(encryptedString);
-                return encryptedString;
-            }
-            static decryptObject(passphrase, id) {
-                const parsedKey = cryptography.getKeyFromPassphrase(passphrase);
-                let encryptedString = id;
-                encryptedString = cryptography.hex.unobfuscateHexString(encryptedString);
-                // Convert the deobfuscated hex string back to base64
-                encryptedString = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Hex.parse(encryptedString));
-                const bytes = CryptoJS.AES.decrypt(encryptedString, parsedKey, {
-                    mode: CryptoJS.mode.ECB,
-                    padding: CryptoJS.pad.Pkcs7
-                });
-                const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
-                const IDObject = JSON.parse(decryptedString);
-                return IDObject;
-            }
-            static addExpire(duration, unit) {
-                const expirationDate = new Date();
-
-                if (unit === 'hours') {
-                    expirationDate.setHours(expirationDate.getHours() + duration);
-                } else if (unit === 'days') {
-                    expirationDate.setDate(expirationDate.getDate() + duration);
-                } else if (unit === 'years') {
-                    expirationDate.setFullYear(expirationDate.getFullYear() + duration);
-                }
-
-                return expirationDate;
-            }
-            static hasExpired(jsonObject) {
-                if (jsonObject.expires instanceof Date) {
-                    const currentTime = new Date();
-                    return currentTime > jsonObject.expires;
-                }
-                return false;
-            }
-            static readFileObject(rawData) {
-                const obfuscatedHex = rawData.toString('utf8');
-
-                const unobfuscatedHex = cryptography.hex.unobfuscateHexString(obfuscatedHex);
-
-                const decodedString = unobfuscatedHex.hexDecode()
-
-                const parsedObject = JSON.parse(decodedString);
-                return parsedObject;
-            }
-
-            static writeFileObject(rawEncrypted, features = [], file, useTOTP, key) {
-                var showFile = "Hidden"
-                if (features.includes("filename")) { showFile = file }
-                var jsonData = {
-                    "raw": `${rawEncrypted}`,
-                    "file": showFile,
-                    "features": features,
-                    "TOTP": false
-                }
-                if (useTOTP) {
-                    jsonData.TOTP = true
-                        // Hash the pw using fish128
-                    let hashedKey = cryptography.hash.fish128(key, "utf8")
-                        // base32 encode
-                    let b32key = base32.encode(hashedKey).toString().replace(/=/g, "")
-                        // create otp
-                    let otp = new cryptography.totp(b32key)
-                    let gaUrl = otp.gaURL(decodeURIComponent(path.basename(file).replace(/\./g, "_")), encodeURIComponent(os.userInfo().username + "@🦈🔑"))
-                    console.log("✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨")
-                    qrcode.generate(gaUrl, { small: true });
-                    console.log("Scan above QR code with Google Authenticator, or go to the url manually, or use the key in your auth app of choice.")
-                    console.log("URL:", gaUrl)
-                    console.log("Key:", b32key)
-                }
-
-                let hexString = JSON.stringify(jsonData, null, 4).hexEncode()
-                return cryptography.hex.obfuscateHexString(hexString)
-            }
+        static encryptObject(obj, passphrase) {
+            const jsonString = JSON.stringify(obj);
+            const parsedKey = cryptography.getKeyFromPassphrase(passphrase);
+            let encryptedString = CryptoJS.AES.encrypt(jsonString, parsedKey, {
+                mode: CryptoJS.mode.ECB,
+                padding: CryptoJS.pad.Pkcs7
+            });
+            // Convert the encrypted string to hex before obfuscation
+            encryptedString = CryptoJS.enc.Hex.stringify(encryptedString.ciphertext);
+            encryptedString = cryptography.hex.obfuscateHexString(encryptedString);
+            return encryptedString;
         }
-        /**
-         * Encrypts text by given key
-         * @param String text to encrypt
-         * @param Buffer masterkey
-         * @returns String encrypted text, base64 encoded
-         */
-    static aese(text, key, iv) {
-            try {
-                console.log(text, key)
-                console.log(iv)
-                    // derive key: 32 byte key length - in assumption the masterkey is a cryptographic and NOT a password there is no need for
-                    // a large number of iterations. It may can replaced by HKDF
-                    // AES 256 GCM Mode
-                var cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+        static decryptObject(passphrase, id) {
+            const parsedKey = cryptography.getKeyFromPassphrase(passphrase);
+            let encryptedString = id;
+            encryptedString = cryptography.hex.unobfuscateHexString(encryptedString);
+            // Convert the deobfuscated hex string back to base64
+            encryptedString = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Hex.parse(encryptedString));
+            const bytes = CryptoJS.AES.decrypt(encryptedString, parsedKey, {
+                mode: CryptoJS.mode.ECB,
+                padding: CryptoJS.pad.Pkcs7
+            });
+            const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+            const IDObject = JSON.parse(decryptedString);
+            return IDObject;
+        }
+        static addExpire(duration, unit) {
+            const expirationDate = new Date();
 
-                // encrypt the given text
-                var encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
-                // extract the auth tag
-                var tag = cipher.getAuthTag() // 16c
-                    // generate output
-                return Buffer.concat([Buffer.from(iv, "hex"), tag, encrypted]).toString("base64")
-
-            } catch (e) {
-                console.log(e)
+            if (unit === 'hours') {
+                expirationDate.setHours(expirationDate.getHours() + duration);
+            } else if (unit === 'days') {
+                expirationDate.setDate(expirationDate.getDate() + duration);
+            } else if (unit === 'years') {
+                expirationDate.setFullYear(expirationDate.getFullYear() + duration);
             }
 
-            // error
-            return null;
+            return expirationDate;
         }
-        /**
-         * Decrypts text by given key
-         * @param String base64 encoded input data
-         * @param Buffer masterkey
-         * @returns String decrypted (original) text
-         */
-    static aesd(data, key, iv) {
-            console.log("owo", data, key, iv)
-            try {
-                // base64 decoding
-                var bData = new Buffer.from(data, 'base64');
-                // random initialization vector
-                var tag = bData.slice(iv.length, iv.length + 16);
-                var text = bData.slice(iv.length + 16);
-                console.log(bData.toString(), tag.toString(), text.toString())
-                    // AES 256 GCM Mode
-                var decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-                decipher.setAuthTag(tag);
-
-                // encrypt the given text
-                var decrypted = decipher.update(text, 'binary', 'utf8') + decipher.final('utf8');
-
-                return Buffer.from(decrypted).toString("utf8");
-
-            } catch (e) {}
-
-            // error
-            return null;
+        static hasExpired(jsonObject) {
+            if (jsonObject.expires instanceof Date) {
+                const currentTime = new Date();
+                return currentTime > jsonObject.expires;
+            }
+            return false;
         }
-        /**
-         * Encrypts file
-         * @param {string} key 
-         * @param {string} file 
-         * @param {boolean} deleteOriginal 
-         * @param {string[]} [features=[]] 
-         */
+        static readFileObject(rawData) {
+            const obfuscatedHex = rawData.toString('utf8');
+
+            const unobfuscatedHex = cryptography.hex.unobfuscateHexString(obfuscatedHex);
+
+            const decodedString = unobfuscatedHex.hexDecode()
+
+            const parsedObject = JSON.parse(decodedString);
+            return parsedObject;
+        }
+
+        static writeFileObject(rawEncrypted, features = [], file, useTOTP, key) {
+            var showFile = "Hidden"
+            if (features.includes("filename")) { showFile = file }
+            var jsonData = {
+                "raw": `${rawEncrypted}`,
+                "file": showFile,
+                "features": features,
+                "TOTP": false
+            }
+            if (useTOTP) {
+                jsonData.TOTP = true
+                    // Hash the pw using fish128
+                let hashedKey = cryptography.hash.fish128(key, "utf8")
+                    // base32 encode
+                let b32key = base32.encode(hashedKey).toString().replace(/=/g, "")
+                    // create otp
+                let otp = new cryptography.totp(b32key)
+                let gaUrl = otp.gaURL(decodeURIComponent(path.basename(file).replace(/\./g, "_")), encodeURIComponent(os.userInfo().username + "@🦈🔑"))
+                console.log("✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨")
+                qrcode.generate(gaUrl, { small: true });
+                console.log("Scan above QR code with Google Authenticator, or go to the url manually, or use the key in your auth app of choice.")
+                console.log("URL:", gaUrl)
+                console.log("Key:", b32key)
+            }
+
+            let hexString = JSON.stringify(jsonData, null, 4).hexEncode()
+            return cryptography.hex.obfuscateHexString(hexString)
+        }
+    }
+
+
+    /**
+     * Encrypts file
+     * @param {string} key 
+     * @param {string} file 
+     * @param {boolean} deleteOriginal 
+     * @param {string[]} [features=[]] 
+     */
     static async encrypt(key, file, deleteOriginal = false, features = [], createIDFile = false, isString = false, doCopy = false) {
         // Basic error checking in encrypt flow
         try {
@@ -742,7 +680,7 @@ class cryptography {
                 rawFileData = atob(fs.readFileSync(file, "utf8"))
             }
             let jsonData = cryptography.object.readFileObject(rawFileData)
-            console.log(jsonData)
+
             var hashKey = await cryptography.calculateKey(key, jsonData.features, false)
             const buff = Buffer.from(jsonData.raw, 'base64')
             const decipher = crypto.createDecipheriv('aes-256-cbc',

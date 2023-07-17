@@ -9,6 +9,8 @@ import yesno from 'yesno';
 import si from 'systeminformation'
 import path from 'path'
 import fs from 'fs'
+import clipboard from 'clipboardy'
+import { execSync } from 'child_process'
 import compression from './compression.js';
 /**
  * Contains cryptographic functions for 🦈.js
@@ -600,7 +602,7 @@ class cryptography {
         static decryptObject(passphrase, id) {
             const parsedKey = cryptography.getKeyFromPassphrase(passphrase);
             let encryptedString = id;
-            encryptedString = cryptography.hex.deobfuscateHexString(encryptedString);
+            encryptedString = cryptography.hex.unobfuscateHexString(encryptedString);
             // Convert the deobfuscated hex string back to base64
             encryptedString = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Hex.parse(encryptedString));
             const bytes = CryptoJS.AES.decrypt(encryptedString, parsedKey, {
@@ -633,7 +635,9 @@ class cryptography {
         }
         static readFileObject(rawData) {
             const obfuscatedHex = rawData.toString('utf8');
+
             const unobfuscatedHex = cryptography.hex.unobfuscateHexString(obfuscatedHex);
+            console.log(unobfuscatedHex)
             const decodedString = unobfuscatedHex.hexDecode()
             const parsedObject = JSON.parse(decodedString);
             return parsedObject;
@@ -641,13 +645,13 @@ class cryptography {
 
         static writeFileObject(rawEncrypted, features = [], file) {
             var showFile = "Hidden"
-            console.vlog(features)
             if (features.includes("filename")) { showFile = file }
             let jsonData = {
                 "raw": `${rawEncrypted}`,
                 "file": showFile,
                 "features": features
             }
+            console.log(jsonData)
             let hexString = JSON.stringify(jsonData, null, 4).hexEncode()
             return cryptography.hex.obfuscateHexString(hexString)
         }
@@ -660,10 +664,16 @@ class cryptography {
      * @param {boolean} deleteOriginal 
      * @param {string[]} [features=[]] 
      */
-    static async encrypt(key, file, deleteOriginal, features = [], createIDFile, idFile) {
+    static async encrypt(key, file, deleteOriginal = false, features = [], createIDFile = false, idFile = '', isString = false, doCopy = false) {
         // Basic error checking in encrypt flow
         try {
-            let fileData = fs.readFileSync(file, "utf8")
+            var fileData;
+            if (isString) {
+                fileData = file
+            } else {
+                fileData = fs.readFileSync(file, "utf8")
+            }
+
             let buff = crypto.createCipheriv('aes-256-cbc', cryptography.hash.fish64(key, "utf8", false), cryptography.hash.fish64(key, "utf8", true))
             var rawEncrypted = Buffer.from(
                     buff.update(fileData, 'utf8', 'hex') + buff.final('hex')
@@ -677,58 +687,74 @@ class cryptography {
             process.exit(0)
         }
         try {
-            /**
-             * Basic check to see if the file we are going to
-             * be writing to exists already, if true then we
-             * ask if we should overwrite it
-             */
-            if (fs.existsSync(file + '.🦈🔑')) {
-                const overwriteFile = await yesno({
-                    question: `The file ${file + '.🦈🔑'} already exists, do you want to overwrite it?\ny/n:`,
-                    defaultValue: false
-                });
-                switch (overwriteFile) {
-                    case true:
-                        fs.writeFileSync(file + '.🦈🔑', `${encrypted}`, "utf8")
-                        console.vlog("Encrypted and overwritten", file + '.sharkkey')
-                        if (createIDFile) {
-                            try {
-                                fs.writeFileSync(file + '.🦈🔑🪪', await cryptography.object.encryptObject(idObjectFile, key), "utf8")
-                            } catch (err) {
-                                console.log("There was an error writing the ID.")
-                                console.error(err)
-                            }
-                        }
-                        break;
-
-                        /** 
-                         * Exit here unless true, as we cant continue.
-                         */
-
-                    case false:
-                        console.vlog("You chose not to overwrite the file, please rename or move the file yourself, and then try again.")
-                        process.exit(0)
-                        break;
-                    default:
-                        console.vlog("You chose not to overwrite the file, please rename or move the file yourself, and then try again.")
-                        process.exit(0)
-                        break;
+            if (isString) {
+                // We are encrypting a string
+                if (doCopy) {
+                    clipboard.writeSync(encrypted)
                 }
+                return btoa(encrypted)
             } else {
-                fs.writeFileSync(file + '.🦈🔑', encrypted, "utf8")
-                console.vlog("Encrypted", file + '.🦈🔑')
-                if (createIDFile) {
-                    try {
-                        fs.writeFileSync(file + '.🦈🔑🪪', await cryptography.object.encryptObject(idObjectFile, key), "utf8")
-                    } catch (err) {
-                        console.log("There was an error writing the ID.")
-                        console.error(err)
+                // We are encrypting a file
+                /**
+                 * Basic check to see if the file we are going to
+                 * be writing to exists already, if true then we
+                 * ask if we should overwrite it
+                 */
+                if (fs.existsSync(file + '.🦈🔑')) {
+                    const overwriteFile = await yesno({
+                        question: `The file ${file + '.🦈🔑'} already exists, do you want to overwrite it?\ny/n:`,
+                        defaultValue: false
+                    });
+                    switch (overwriteFile) {
+                        case true:
+                            fs.writeFileSync(file + '.🦈🔑', `${encrypted}`, "utf8")
+                            if (doCopy) {
+                                clipboard.writeSync(`${encrypted}`)
+                            }
+                            console.vlog("Encrypted and overwritten", file + '.sharkkey')
+                            if (createIDFile) {
+                                try {
+                                    fs.writeFileSync(file + '.🦈🔑🪪', await cryptography.object.encryptObject(idObjectFile, key), "utf8")
+                                } catch (err) {
+                                    console.log("There was an error writing the ID.")
+                                    console.error(err)
+                                }
+                            }
+                            break;
+
+                            /** 
+                             * Exit here unless true, as we cant continue.
+                             */
+
+                        case false:
+                            console.vlog("You chose not to overwrite the file, please rename or move the file yourself, and then try again.")
+                            process.exit(0)
+                            break;
+                        default:
+                            console.vlog("You chose not to overwrite the file, please rename or move the file yourself, and then try again.")
+                            process.exit(0)
+                            break;
+                    }
+                } else {
+                    fs.writeFileSync(file + '.🦈🔑', encrypted, "utf8")
+                    if (doCopy) {
+                        clipboard.writeSync(`${encrypted}`)
+                    }
+                    console.vlog("Encrypted", file + '.🦈🔑')
+                    if (createIDFile) {
+                        try {
+                            fs.writeFileSync(file + '.🦈🔑🪪', await cryptography.object.encryptObject(idObjectFile, key), "utf8")
+                        } catch (err) {
+                            console.log("There was an error writing the ID.")
+                            console.error(err)
+                        }
                     }
                 }
             }
+
         } catch (err) {
             // idek how, like no storage? used by other process?
-            console.log("Error writing file...")
+            console.log("There was an error writing the file, or outputting the string")
             throw new Error(err)
         }
         // if --deleteOriginal CLI flag was found
@@ -751,7 +777,7 @@ class cryptography {
      * @param {string} file 
      * @param {boolean} deleteOriginal 
      */
-    static async decrypt(key, file, deleteOriginal) {
+    static async decrypt(key, file, deleteOriginal = false, isString = false, doCopy = false) {
         // Basic error checking in decrypt flow
 
         // Try to decrypt, if this fails its either because:
@@ -761,8 +787,15 @@ class cryptography {
         // TODO: Implement "unlock" files that can unencrypt on other machine
         // by storing hwid in .sharkkeyPublic (maybe)
         try {
-            let rawFileData = atob(fs.readFileSync(file, "utf8"))
+            let rawFileData;
+            if (isString) {
+                rawFileData = atob(file)
+            } else {
+                rawFileData = atob(fs.readFileSync(file, "utf8"))
+            }
+
             let jsonData = cryptography.object.readFileObject(rawFileData)
+            console.log(jsonData)
             let hashKey = await cryptography.calculateKey(key, jsonData.features, false)
             const buff = Buffer.from(jsonData.raw, 'base64')
             const decipher = crypto.createDecipheriv('aes-256-cbc',
@@ -776,6 +809,12 @@ class cryptography {
                 decipher.final('utf8');
 
             var originalText = final
+            if (isString) {
+                if (doCopy) {
+                    clipboard.writeSync(originalText)
+                }
+                return originalText
+            }
         } catch (err) {
             console.log("Error decrypting file. Have you entered the correct key?")
             console.error(err)
@@ -830,5 +869,15 @@ class cryptography {
         }
     }
     static totp = TOTP
+    static checkid(file, key, doCopy = false) {
+        if (fs.existsSync(file)) {
+            let fileData = fs.readFileSync(file, 'utf8')
+            let id = cryptography.object.decryptObject(key, fileData)
+            if (doCopy) {
+                clipboard.writeSync(JSON.stringify(id, null, 2))
+            }
+            return id
+        }
+    }
 }
 export default cryptography

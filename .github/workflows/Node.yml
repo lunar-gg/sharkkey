@@ -29,3 +29,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        
+      - name: upload
+        run: gh release create wip ./dist/* --generate-notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

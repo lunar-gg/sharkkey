@@ -8,7 +8,7 @@ var hashKey = await shark.cryptography.calculateKey(
     "jestFile.txt")
 describe("function calcKey", () => {
     test("calcKey", () => {
-        expect(hashKey).toBe("b8472966290cb802cffa3e06f43dccb648e6ec7ee03aebbba87996c6331d6055")
+        expect(hashKey).toBe("f4ae94915992469a97b348ca406f43dccb648e6ec7ee03aebbba87996502c4b8")
     })
 })
 describe("files", () => {
@@ -29,12 +29,12 @@ describe("strings", () => {
     test("encrypt string", async() => {
         expect(await shark.cryptography.encrypt(hashKey, "hello", false, [], false, true, false))
             .toBe(
-                "ZmY4NGZmZjVmZmRmZmZkZmZmZGZmZmRmZmZkZGZmOGRmZjllZmY4OGZmZGRmZmM1ZmZkZmZmZGRmZmIyZmZhYmZmYjJmZmNjZmZiMmZmODVmZmI1ZmY5NmZmYjJmZmI4ZmZhOWZmOTdmZmIxZmY4NWZmYjJmZmNkZmZiMmZmOTVmZjk4ZmZjZmZmYjBmZmFiZmZiZWZmY2NmZmIyZmY4NWZmYTlmZjkzZmZiMWZmYjhmZmI2ZmY4NWZmYTZmZmE4ZmZiMmZmY2FmZmIxZmZjZGZmYjlmZjk1ZmZhNWZmOTJmZmI2ZmZjMmZmZGRmZmQzZmZmNWZmZGZmZmRmZmZkZmZmZGZmZmRkZmY5OWZmOTZmZjkzZmY5YWZmZGRmZmM1ZmZkZmZmZGRmZmI3ZmY5NmZmOWJmZjliZmY5YWZmOTFmZmRkZmZkM2ZmZjVmZmRmZmZkZmZmZGZmZmRmZmZkZGZmOTlmZjlhZmY5ZWZmOGJmZjhhZmY4ZGZmOWFmZjhjZmZkZGZmYzVmZmRmZmZhNGZmYTJmZmQzZmZmNWZmZGZmZmRmZmZkZmZmZGZmZmRkZmZhYmZmYjBmZmFiZmZhZmZmZGRmZmM1ZmZkZmZmOTlmZjllZmY5M2ZmOGNmZjlhZmZmNWZmODI="
+                "ZmY4NGZmZjVmZmRmZmZkZmZmZGZmZmRmZmZkZGZmOGRmZjllZmY4OGZmZGRmZmM1ZmZkZmZmZGRmZmE2ZmY5MmZmYjJmZmNiZmZhNWZmYmJmZjkzZmY5NGZmYjFmZjk1ZmY5N2ZmOTdmZmIxZmY5MmZmYTlmZjk0ZmZhNmZmYWJmZmI2ZmZjZGZmYjJmZmE4ZmZhNmZmODdmZmIxZmZiOGZmYWRmZjk3ZmZiMWZmOTJmZmFhZmZjYWZmYTVmZmFiZmY5OGZmY2JmZmIyZmY4NWZmYTlmZjk0ZmZhNWZmOTVmZmJlZmZjMmZmZGRmZmQzZmZmNWZmZGZmZmRmZmZkZmZmZGZmZmRkZmY5OWZmOTZmZjkzZmY5YWZmZGRmZmM1ZmZkZmZmZGRmZmI3ZmY5NmZmOWJmZjliZmY5YWZmOTFmZmRkZmZkM2ZmZjVmZmRmZmZkZmZmZGZmZmRmZmZkZGZmOTlmZjlhZmY5ZWZmOGJmZjhhZmY4ZGZmOWFmZjhjZmZkZGZmYzVmZmRmZmZhNGZmYTJmZmQzZmZmNWZmZGZmZmRmZmZkZmZmZGZmZmRkZmZhYmZmYjBmZmFiZmZhZmZmZGRmZmM1ZmZkZmZmOTlmZjllZmY5M2ZmOGNmZjlhZmZmNWZmODI="
             )
     })
     test("decrypt string", async() => {
         expect(await shark.cryptography.decrypt("jestPass",
-            "ZmY4NGZmZjVmZmRmZmZkZmZmZGZmZmRmZmZkZGZmOGRmZjllZmY4OGZmZGRmZmM1ZmZkZmZmZGRmZmIyZmZhYmZmYjJmZmNjZmZiMmZmODVmZmI1ZmY5NmZmYjJmZmI4ZmZhOWZmOTdmZmIxZmY4NWZmYjJmZmNkZmZiMmZmOTVmZjk4ZmZjZmZmYjBmZmFiZmZiZWZmY2NmZmIyZmY4NWZmYTlmZjkzZmZiMWZmYjhmZmI2ZmY4NWZmYTZmZmE4ZmZiMmZmY2FmZmIxZmZjZGZmYjlmZjk1ZmZhNWZmOTJmZmI2ZmZjMmZmZGRmZmQzZmZmNWZmZGZmZmRmZmZkZmZmZGZmZmRkZmY5OWZmOTZmZjkzZmY5YWZmZGRmZmM1ZmZkZmZmZGRmZmI3ZmY5NmZmOWJmZjliZmY5YWZmOTFmZmRkZmZkM2ZmZjVmZmRmZmZkZmZmZGZmZmRmZmZkZGZmOTlmZjlhZmY5ZWZmOGJmZjhhZmY4ZGZmOWFmZjhjZmZkZGZmYzVmZmRmZmZhNGZmYTJmZmQzZmZmNWZmZGZmZmRmZmZkZmZmZGZmZmRkZmZhYmZmYjBmZmFiZmZhZmZmZGRmZmM1ZmZkZmZmOTlmZjllZmY5M2ZmOGNmZjlhZmZmNWZmODI=", false, true, false)).toBe("hello")
+            "ZmY4NGZmZjVmZmRmZmZkZmZmZGZmZmRmZmZkZGZmOGRmZjllZmY4OGZmZGRmZmM1ZmZkZmZmZGRmZmE2ZmY5MmZmYjJmZmNiZmZhNWZmYmJmZjkzZmY5NGZmYjFmZjk1ZmY5N2ZmOTdmZmIxZmY5MmZmYTlmZjk0ZmZhNmZmYWJmZmI2ZmZjZGZmYjJmZmE4ZmZhNmZmODdmZmIxZmZiOGZmYWRmZjk3ZmZiMWZmOTJmZmFhZmZjYWZmYTVmZmFiZmY5OGZmY2JmZmIyZmY4NWZmYTlmZjk0ZmZhNWZmOTVmZmJlZmZjMmZmZGRmZmQzZmZmNWZmZGZmZmRmZmZkZmZmZGZmZmRkZmY5OWZmOTZmZjkzZmY5YWZmZGRmZmM1ZmZkZmZmZGRmZmI3ZmY5NmZmOWJmZjliZmY5YWZmOTFmZmRkZmZkM2ZmZjVmZmRmZmZkZmZmZGZmZmRmZmZkZGZmOTlmZjlhZmY5ZWZmOGJmZjhhZmY4ZGZmOWFmZjhjZmZkZGZmYzVmZmRmZmZhNGZmYTJmZmQzZmZmNWZmZGZmZmRmZmZkZmZmZGZmZmRkZmZhYmZmYjBmZmFiZmZhZmZmZGRmZmM1ZmZkZmZmOTlmZjllZmY5M2ZmOGNmZjlhZmZmNWZmODI=", false, true, false)).toBe("hello")
     })
 
 })

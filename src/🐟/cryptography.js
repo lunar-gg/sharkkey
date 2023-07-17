@@ -227,8 +227,7 @@ class cryptography {
     }
     static async calculateKey(key, features, createIDFile, file) {
         var id = "";
-        // If no features are set, we use default settings, HWID locking
-        if (features.length === 0 || features.includes("hwid")) {
+        if (features.includes("hwid")) {
             // get hwid
             id += await getHWID({ hash: false })
         }

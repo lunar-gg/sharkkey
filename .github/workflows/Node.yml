@@ -17,15 +17,15 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '16' # Replace with your desired Node.js version
-
-      - name: Install Dependencies
-        run: npm ci
-        
+          
       - name: Install pkg
         run: npm i -g pkg
 
       - name: Install esbuild
         run: npm install --save-exact esbuild
+        
+      - name: Install Dependencies
+        run: npm ci
 
       - name: Build
         run: npm run build

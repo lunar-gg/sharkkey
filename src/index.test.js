@@ -20,7 +20,11 @@ describe("files", () => {
     })
     test("encrypt file with id", async() => {
         fs.writeFileSync("jestFileId.txt", "hello world", "utf8")
-        expect(await shark.cryptography.encrypt(hashKey, "./jestFileId.txt", true, [], true, false, false))
+        var hk = await shark.cryptography.calculateKey(
+            "jestPass", [],
+            true,
+            "./jestFileId.txt")
+        expect(await shark.cryptography.encrypt(hk, "./jestFileId.txt", true, [], true, false, false))
             .toBe(true)
     })
     test("encrypt file with TOTP", async() => {

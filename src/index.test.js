@@ -23,7 +23,7 @@ describe("files", () => {
         var hk = await shark.cryptography.calculateKey(
             "jestPass", [],
             true,
-            "./jestFileId.txt")
+            "jestFileId.txt")
         expect(await shark.cryptography.encrypt(hk, "./jestFileId.txt", true, [], true, false, false))
             .toBe(true)
     })

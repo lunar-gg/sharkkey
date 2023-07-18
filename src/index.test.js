@@ -1,7 +1,7 @@
-import { program } from 'commander';
 import shark from './🦈.js';
 import fs from 'fs'
-import { jest, test, afterEach, beforeAll, afterAll, describe, beforeEach, it, expect } from '@jest/globals'
+import process from 'process';
+import { test, describe, expect } from '@jest/globals'
 var hashKey = await shark.cryptography.calculateKey(
     "jestPass", [],
     false,
@@ -18,10 +18,23 @@ describe("files", () => {
         expect(await shark.cryptography.encrypt(hashKey, "./jestFile.txt", true, [], false, false, false))
             .toBe(true)
     })
+    test("encrypt file with id", async() => {
+        fs.writeFileSync("jestFileId.txt", "hello world", "utf8")
+        expect(await shark.cryptography.encrypt(hashKey, "./jestFileId.txt", true, [], true, false, false))
+            .toBe(true)
+    })
+    test("encrypt file with TOTP", async() => {
+        fs.writeFileSync("jestFileTOTP.txt", "hello world", "utf8")
+        expect(await shark.cryptography.encrypt(hashKey, "./jestFileTOTP.txt", true, ["totp"], false, false, false))
+            .toBe(true)
+    })
     test("decrypt file", async() => {
         expect(await shark.cryptography.decrypt("jestPass", "./jestFile.txt.🦈🔑", true, false, false))
             .toBe(true)
         if (fs.existsSync("jestFile.txt")) fs.unlinkSync("jestFile.txt")
+        if (fs.existsSync("jestFileId.txt.🦈🔑")) fs.unlinkSync("jestFileId.txt.🦈🔑")
+        if (fs.existsSync("jestFileId.txt.🦈🔑🪪")) fs.unlinkSync("jestFileId.txt.🦈🔑🪪")
+        if (fs.existsSync("jestFileTOTP.txt.🦈🔑")) fs.unlinkSync("jestFileTOTP.txt.🦈🔑")
     })
 
 })
@@ -43,7 +56,7 @@ describe("compression", () => {
         expect(shark.compression.compressString("hello world"))
             .toBe("CwWAaGVsbG8gd29ybGQD")
     })
-    test("compression", () => {
+    test("decompression", () => {
         expect(shark.compression.decompressString("CwWAaGVsbG8gd29ybGQD"))
             .toBe("hello world")
     })
@@ -54,6 +67,11 @@ describe("generic", () => {
             .toContain(`@********..........(..(...***,...******@@@@@@@@@@@@@@@@@@@**********************`)
     })
     test("vlog", () => {
+        expect(shark.vlog("hello world"))
+            .toBe(undefined)
+    })
+    test("vlog verbose enabled", () => {
+        process.argv.push("--verbose")
         expect(shark.vlog("hello world"))
             .toBe(undefined)
     })

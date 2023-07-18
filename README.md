@@ -7,6 +7,9 @@
 
 [![Known Vulnerabilities](https://snyk.io/test/github/lunar-gg/sharkkey/badge.svg)]
 
+[![codecov](https://codecov.io/gh/lunar-gg/sharkkey/branch/main/graph/badge.svg?token=316VHCOLS6)](https://codecov.io/gh/lunar-gg/sharkkey)
+
+
 ## Resonably secure encryption
 
 Changelog 7/17/23 13~ :

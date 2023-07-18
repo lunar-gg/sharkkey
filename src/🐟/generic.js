@@ -1,6 +1,4 @@
 import process from 'process'
-import path from 'path'
-import fs from 'fs'
 /** super boring generic io stuff */
 class generic {
     /**
@@ -42,7 +40,7 @@ class generic {
             @@@@@@@@@@@@@@@******@@@@@@@@@@@@@@@@@@@`.split("\n")
             let out = ""
             sharkarray.forEach((line, index) => {
-                out += `${line + keyarray[index]}`.replace(new RegExp(/    /g), "") + "\n"
+                out += `${line + keyarray[index]}`.replace(new RegExp(/ {4}/g), "") + "\n"
             })
             return out
         }

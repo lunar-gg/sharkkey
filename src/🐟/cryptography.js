@@ -380,19 +380,19 @@ class Cryptography {
             });
 
             // Convert the two "halves" of the md5 hash back into strings
-            let md5h1 = xx.join('').toString()
-            let md5h2 = yy.join('').toString()
+            let md6h1 = xx.join('').toString()
+            let md6h2 = yy.join('').toString()
 
-            // split md5h1 into two strings, and then shift them individually,
-            // lastly converting them back into a string called md5h1final
-            let md5h1final = `${Cryptography.shift(md5h1.slice(0, md5h1.length / 2))}${Cryptography.shift(md5h1.slice(md5h1.length / 2, md5h1.length))}`
+            // split md6h1 into two strings, and then shift them individually,
+            // lastly converting them back into a string called md6h1final
+            let md6h1final = `${Cryptography.shift(md6h1.slice(0, md6h1.length / 2))}${Cryptography.shift(md6h1.slice(md6h1.length / 2, md6h1.length))}`
 
-            // split md5h2 into two strings, and then shift them individually,
-            // lastly converting them back into a string called md5h2final
-            let md5h2final = `${Cryptography.shift(md5h2.slice(0, md5h2.length / 2))}${Cryptography.shift(md5h2.slice(md5h2.length / 2, md5h2.length))}`
+            // split md6h2 into two strings, and then shift them individually,
+            // lastly converting them back into a string called md6h2final
+            let md6h2final = `${Cryptography.shift(md6h2.slice(0, md6h2.length / 2))}${Cryptography.shift(md6h2.slice(md6h2.length / 2, md6h2.length))}`
 
             // combine the 2 halves, and then shift, set md6key to the output
-            md6key = Cryptography.shift(`${md5h1final}${md5h2final}`)
+            md6key = Cryptography.shift(`${md6h1final}${md6h2final}`)
 
             // return the result
             return md6key
@@ -541,7 +541,7 @@ class Cryptography {
 
             // Declare the variables we're going to use for the encryption
             const key = Buffer.from(parsedKey, 'hex'); // Convert the parsedKey to a Buffer
-            const iv = Buffer.alloc(16); // For AES-256, initialize an empty 16-byte Buffer
+            const iv = Buffer.alloc(16); // TODO: Be less stupid
 
             // Create the cipher and encrypt the data
             const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
@@ -750,7 +750,7 @@ class Cryptography {
      * @param {string} mode Either "encrypt" or "decrypt" - Used for determing file extentions
      * @param {boolean} [createIDFile=false] if we want to create a ID file along with the encrypted file
      */
-    static async prepareSave(file, mode, createIDFile = false) {
+    static prepareSave(file, mode, createIDFile = false) {
         let fileString
 
         // define fileString depending on what "mode" we're using
@@ -885,7 +885,7 @@ class Cryptography {
                 let otp = new Cryptography.totp(b32key) // create otp
 
                 // Ask the user for their TOTP code
-                var userotp = readlineSync.questionInt("Enter the code found in your authenticator app ")
+                let userotp = readlineSync.questionInt("Enter the code found in your authenticator app ")
 
                 // Check if user input is correct, if not - stop and throw error
                 if (!otp.verify(userotp.toString())) {
@@ -919,17 +919,16 @@ class Cryptography {
      * @param {boolean} [doCopy=false] 
      */
     static decrypt(key, file, deleteOriginal = false, isString = false, doCopy = false) {
-        let originalText; // We declare it here first so we can use it in the low later.
         // Decrypt the file / string
-        originalText = Cryptography.decryptData(key, file, isString)
+        let originalText = Cryptography.decryptData(key, file, isString) // We declare it here first so we can use it in the low later.
 
-        if (isString) { // Return (and copy) string
-            if (doCopy) {
-                clipboard.writeSync(originalText)
-            }
-            return originalText
-        } else { // Write (and copy) file       
-            try {
+        switch (isString) {
+            case true:
+                if (doCopy) {
+                    clipboard.writeSync(originalText)
+                }
+                return originalText
+            case false:
                 // Check if file exists, if it does - ask for permission to overwrite
                 if (Cryptography.prepareSave(file, "decrypt")) {
                     // We are ready to save
@@ -941,11 +940,9 @@ class Cryptography {
                     }
 
                 } else { throw new Error("Enexpected return value from prepareSave() in the decrypt flow") }
-            } catch (err) {
-                // Not sure how it could fail, but catch it anyways
-                console.log("There was a error writing the decrypted file")
-                throw new Error(err)
-            }
+                break;
+            default:
+                throw new Error("Required parameter isString was neither true or false")
         }
         // Delete original file (making sure isString is false, as if it was true, there would be no original file to delete.)
         try {

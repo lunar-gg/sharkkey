@@ -11,6 +11,15 @@
 ## Do not use, as the encryption workflow is constantly changing, so files encrypted with one version might not be decryptable with new versions. (Until the final workflow has been decided)
 ### Resonably secure encryption
 
+Changelog 7/19/23 03~ :
+* General code quality improvements
+* Switched from own hex encoding \ decoding to node:buffer
+* Completely switched away from CryptoJS in favour of the native node:crypto
+* Wrote JSDocs for everything in 🐟/cryptography.js, 🐟/compression.js, index.js, and 🦈.js
+* Deleted 🐟/generic.js and moved functions to 🦈.js
+* Improved the encryptObject function by switching to aes-256-cbc (same goes for the decryptObject function)
+* Wrote comments for everything in 🐟/cryptography.js, 🐟/compression.js, index.js, and 🦈.js
+
 Changelog 7/17/23 13~ :
 * TOTP (Time-based one time password) (example: Google Authentacater)
 * Completely removed all MD5 ussage to be safe against collision attacks

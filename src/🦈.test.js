@@ -3,7 +3,6 @@ import { jest, describe, beforeEach, it, expect } from '@jest/globals'
 jest.mock("./🐟/generic.js");
 jest.mock("./🐟/cryptography.js");
 jest.mock('./🐟/compression.js');
-
 describe('shark', () => {
     let instance;
 

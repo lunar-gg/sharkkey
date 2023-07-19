@@ -2,7 +2,7 @@ import shark from './🦈.js';
 import fs from 'fs'
 import process from 'process';
 import { test, describe, expect } from '@jest/globals'
-var hashKey = await shark.cryptography.calculateKey(
+const hashKey = await shark.cryptography.calculateKey(
     "jestPass", [],
     false,
     "jestFile.txt")
@@ -20,7 +20,7 @@ describe("files", () => {
     })
     test("encrypt file with id", async() => {
         fs.writeFileSync("jestFileId.txt", "hello world", "utf8")
-        var hk = await shark.cryptography.calculateKey(
+        let hk = await shark.cryptography.calculateKey(
             "jestPass", [],
             true,
             "jestFileId.txt")
@@ -46,12 +46,12 @@ describe("strings", () => {
     test("encrypt string", async() => {
         expect(await shark.cryptography.encrypt(hashKey, "hello", false, [], false, true, false))
             .toBe(
-                "ZmY4NGZmZjVmZmRmZmZkZmZmZGZmZmRmZmZkZGZmOGRmZjllZmY4OGZmZGRmZmM1ZmZkZmZmZGRmZmE2ZmY5MmZmYjJmZmNiZmZhNWZmYmJmZjkzZmY5NGZmYjFmZjk1ZmY5N2ZmOTdmZmIxZmY5MmZmYTlmZjk0ZmZhNmZmYWJmZmI2ZmZjZGZmYjJmZmE4ZmZhNmZmODdmZmIxZmZiOGZmYWRmZjk3ZmZiMWZmOTJmZmFhZmZjYWZmYTVmZmFiZmY5OGZmY2JmZmIyZmY4NWZmYTlmZjk0ZmZhNWZmOTVmZmJlZmZjMmZmZGRmZmQzZmZmNWZmZGZmZmRmZmZkZmZmZGZmZmRkZmY5OWZmOTZmZjkzZmY5YWZmZGRmZmM1ZmZkZmZmZGRmZmI3ZmY5NmZmOWJmZjliZmY5YWZmOTFmZmRkZmZkM2ZmZjVmZmRmZmZkZmZmZGZmZmRmZmZkZGZmOTlmZjlhZmY5ZWZmOGJmZjhhZmY4ZGZmOWFmZjhjZmZkZGZmYzVmZmRmZmZhNGZmYTJmZmQzZmZmNWZmZGZmZmRmZmZkZmZmZGZmZmRkZmZhYmZmYjBmZmFiZmZhZmZmZGRmZmM1ZmZkZmZmOTlmZjllZmY5M2ZmOGNmZjlhZmZmNWZmODI="
+                "ODRmNWRmZGZkZmRmZGQ4ZDllODhkZGM1ZGZkZGE2OTJiMmNiYTViYjkzOTRiMTk1OTc5N2IxOTJhOTk0YTZhYmI2Y2RiMmE4YTY4N2IxYjhhZDk3YjE5MmFhY2FhNWFiOThjYmIyODVhOTk0YTU5NWJlYzJkZGQzZjVkZmRmZGZkZmRkOTk5NjkzOWFkZGM1ZGZkZGI3OTY5YjliOWE5MWRkZDNmNWRmZGZkZmRmZGQ5OTlhOWU4YjhhOGQ5YThjZGRjNWRmYTRhMmQzZjVkZmRmZGZkZmRkYWJiMGFiYWZkZGM1ZGY5OTllOTM4YzlhZjU4Mg=="
             )
     })
     test("decrypt string", async() => {
         expect(await shark.cryptography.decrypt("jestPass",
-            "ZmY4NGZmZjVmZmRmZmZkZmZmZGZmZmRmZmZkZGZmOGRmZjllZmY4OGZmZGRmZmM1ZmZkZmZmZGRmZmE2ZmY5MmZmYjJmZmNiZmZhNWZmYmJmZjkzZmY5NGZmYjFmZjk1ZmY5N2ZmOTdmZmIxZmY5MmZmYTlmZjk0ZmZhNmZmYWJmZmI2ZmZjZGZmYjJmZmE4ZmZhNmZmODdmZmIxZmZiOGZmYWRmZjk3ZmZiMWZmOTJmZmFhZmZjYWZmYTVmZmFiZmY5OGZmY2JmZmIyZmY4NWZmYTlmZjk0ZmZhNWZmOTVmZmJlZmZjMmZmZGRmZmQzZmZmNWZmZGZmZmRmZmZkZmZmZGZmZmRkZmY5OWZmOTZmZjkzZmY5YWZmZGRmZmM1ZmZkZmZmZGRmZmI3ZmY5NmZmOWJmZjliZmY5YWZmOTFmZmRkZmZkM2ZmZjVmZmRmZmZkZmZmZGZmZmRmZmZkZGZmOTlmZjlhZmY5ZWZmOGJmZjhhZmY4ZGZmOWFmZjhjZmZkZGZmYzVmZmRmZmZhNGZmYTJmZmQzZmZmNWZmZGZmZmRmZmZkZmZmZGZmZmRkZmZhYmZmYjBmZmFiZmZhZmZmZGRmZmM1ZmZkZmZmOTlmZjllZmY5M2ZmOGNmZjlhZmZmNWZmODI=", false, true, false)).toBe("hello")
+            "ODRmNWRmZGZkZmRmZGQ4ZDllODhkZGM1ZGZkZGE2OTJiMmNiYTViYjkzOTRiMTk1OTc5N2IxOTJhOTk0YTZhYmI2Y2RiMmE4YTY4N2IxYjhhZDk3YjE5MmFhY2FhNWFiOThjYmIyODVhOTk0YTU5NWJlYzJkZGQzZjVkZmRmZGZkZmRkOTk5NjkzOWFkZGM1ZGZkZGI3OTY5YjliOWE5MWRkZDNmNWRmZGZkZmRmZGQ5OTlhOWU4YjhhOGQ5YThjZGRjNWRmYTRhMmQzZjVkZmRmZGZkZmRkYWJiMGFiYWZkZGM1ZGY5OTllOTM4YzlhZjU4Mg==", false, true, false)).toBe("hello")
     })
 
 })

@@ -35,7 +35,6 @@
     "dependencies": {
         "clipboardy": "^3.0.0",
         "commander": "^11.0.0",
-        "crypto-js": "^4.1.1",
         "esbuild": "0.18.13",
         "hwid": "^0.4.1",
         "ip": "^1.1.8",

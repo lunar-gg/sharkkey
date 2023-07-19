@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '20.2' # Replace with your desired Node.js version
       - name: Install esbuild, jest & pkg
-        run: npm install --save-exact esbuild && npm i jest --save-dev && npm i -g pkg
+        run: npm install --save-exact esbuild && npm i --save-exact jest --save-dev && npm i -g pkg
       - name: Install Dependencies
         run: npm ci
       - name: test

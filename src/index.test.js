@@ -29,7 +29,9 @@ describe("files", () => {
     })
     test("encrypt file with TOTP", () => {
         fs.writeFileSync("jestFileTOTP.txt", "hello world", "utf8")
-        expect(shark.cryptography.encrypt(hashKey, "./jestFileTOTP.txt", true, ["totp"], false, false, false))
+        let hashkey = shark.cryptography.calculateKey(
+            "jestPass", ["totp"], false, "jestFileTOTP.txt")
+        expect(shark.cryptography.encrypt(hashkey, "./jestFileTOTP.txt", true, ["totp"], false, false, false))
             .toBe(true)
         if (fs.existsSync("jestFileTOTP.txt.🦈🔑")) fs.unlinkSync("jestFileTOTP.txt.🦈🔑")
     })

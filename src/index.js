@@ -69,7 +69,7 @@ program // Set basic info
         }
 
         // Get the hashed key
-        const hashKey = await shark.cryptography.calculateKey(
+        const hashKey = shark.cryptography.calculateKey(
             pass,
             features,
             options.createID || false,
@@ -106,7 +106,7 @@ program // Set basic info
             ✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨`
 
             // Encrypt the data
-            let encrypted = await shark.cryptography.encrypt(
+            let encrypted = shark.cryptography.encrypt(
                 hashKey,
                 file,
                 options.deleteOriginal,
@@ -242,7 +242,7 @@ program // Set basic info
         // Handle checkid command
 
         // Get info from the file
-        let idInfo = await shark.cryptography.checkid(file, password, options.copy || false)
+        let idInfo = shark.cryptography.checkid(file, password, options.copy || false)
 
         // Output template
         let infoStr = `✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨

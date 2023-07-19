@@ -1,23 +1,22 @@
 // Native imports
-import readline from 'node:readline/promises'
-import { stdin as input, stdout as output } from 'node:process';
+import process from 'node:process';
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
-import process from 'node:process'
 import { Buffer } from 'node:buffer';
+// First party Imports
+import syncOsInfo from './synchronousOsInfo.js'
 // Third party imports
+import readlineSync from 'readline-sync'
 import md6Hash from 'md6-hash';
 import TOTP from 'totp.js';
-import { getHWID } from 'hwid'
 import ip from 'ip'
-import yesno from 'yesno';
-import si from 'systeminformation'
 import base32 from 'thirty-two'
 import clipboard from 'clipboardy'
 import qrcode from 'qrcode-terminal'
-
+import nodeMachineId from 'node-machine-id'
+const { machineIdSync } = nodeMachineId
 // Declare idObjectFile so we can use it globally
 let idObjectFile;
 
@@ -232,18 +231,18 @@ class Cryptography {
      * @param {string} file File path, or just a text string if --string is used
      * @returns {string} Computed ID string
      */
-    static async createIDString(features, file) {
+    static createIDString(features, file) {
         let id = "";
         let osInfo;
         if (features.includes("hwid")) {
             // get hwid
-            id += await getHWID({ hash: false })
+            id += machineIdSync(true)
         }
         if (features.includes("distro") || features.includes("hostname") || features.includes("platform") || features.includes("serial")) {
-            osInfo = await si.osInfo();
+            osInfo = syncOsInfo.osInfo()
         }
         if (features.includes("lip")) {
-            id += `${await ip.address()}`
+            id += `${ip.address()}`
         }
         if (features.includes("username")) {
             id += `${os.userInfo().username}`
@@ -258,7 +257,7 @@ class Cryptography {
             id += `${osInfo.distro}`;
         }
         if (features.includes("hostname")) {
-            id += `${osInfo.hostname}`;
+            id += `${os.hostname}`;
         }
         if (features.includes("platform")) {
             id += `${osInfo.platform}`;
@@ -283,12 +282,12 @@ class Cryptography {
      * @param {string} file file name or path
      * @returns {string} Key used for encryption and decryption
      */
-    static async calculateKey(password, featuresArray, createIDFile, file) {
+    static calculateKey(password, featuresArray, createIDFile, file) {
         // Generate the ID string
-        let id = await Cryptography.createIDString(featuresArray, file)
+        let id = Cryptography.createIDString(featuresArray, file)
 
         // Turn the ID into a SHA256 hash
-        id = `${await crypto.createHash('sha256').update(id).digest('hex')}`
+        id = `${crypto.createHash('sha256').update(id).digest('hex')}`
 
         // Handle the ID - and turn it into an object with the two halves
         let idObject = Cryptography.handle.identifierHash(id)
@@ -703,7 +702,7 @@ class Cryptography {
      * @param {string[]} [features=[]] Array of strings, taken from args, containing info about what info we use to create the ID string for encryption
      * @returns {string} Base64 encoded hex obfuscated object that contains file / string info, and the raw encrypted data
      */
-    static async encryptData(data, key, isString, features = []) {
+    static encryptData(data, key, isString, features = []) {
         let dataToEncrypt;
 
         switch (isString) {
@@ -769,10 +768,7 @@ class Cryptography {
         // We test for fileString OR keyfile, as if fileString dosn't exist, but keyfile does, we're gonna get an exception.
         if (fs.existsSync(fileString) || fs.existsSync(file + '.🦈🔑🪪')) {
             // Ask user for permission to overwrite
-            const overwriteFile = await yesno({
-                question: `The file ${fileString} already exists, do you want to overwrite it?\ny/n:`,
-                defaultValue: false
-            });
+            const overwriteFile = readlineSync.keyInYNStrict(`The file ${fileString} already exists, do you want to overwrite it?`)
             switch (overwriteFile) {
                 // We should overwrite the file, so delete it.
                 case true:
@@ -809,45 +805,45 @@ class Cryptography {
      */
     // TODO: Add return statements with objects
     // TODO: switch to AES-256-GCM
-    static async encrypt(key, data, deleteOriginal = false, features = [], createIDFile = false, isString = false, doCopy = false) {
-        let encrypted = await Cryptography.encryptData(data, key, isString, features)
+    static encrypt(key, data, deleteOriginal = false, features = [], createIDFile = false, isString = false, doCopy = false) {
+        let encrypted = Cryptography.encryptData(data, key, isString, features)
         try {
-            if (isString) { // Return the encrypted string
-                if (doCopy) {
-                    // Copy the encrypted string into the clipboard
-                    clipboard.writeSync(encrypted)
-                }
-                return encrypted
-            } else { // Save file
-                // Check if files exist, if they do - ask for permission to overwrite
-                if (await Cryptography.prepareSave(data, "encrypt", createIDFile)) {
-                    // We are ready to save
-                    fs.writeFileSync(data + '.🦈🔑', `${encrypted}`, "utf8")
+            switch (isString) {
+                case true: // Return the encrypted string
                     if (doCopy) {
-                        clipboard.writeSync(`${encrypted}`)
+                        // Copy the encrypted string into the clipboard
+                        clipboard.writeSync(encrypted)
                     }
-                    if (createIDFile) {
-                        fs.writeFileSync(data + '.🦈🔑🪪', await Cryptography.object.encryptObject(idObjectFile, key), "utf8")
-                    }
-                } else { throw new Error("Enexpected return value from prepareSave() in the encryption flow") }
+                    return encrypted
+                case false: // Save file
+                    // Check if files exist, if they do - ask for permission to overwrite
+                    if (Cryptography.prepareSave(data, "encrypt", createIDFile)) {
+                        // We are ready to save
+                        fs.writeFileSync(data + '.🦈🔑', `${encrypted}`, "utf8")
+                        if (doCopy) {
+                            clipboard.writeSync(`${encrypted}`)
+                        }
+                        if (createIDFile) {
+                            fs.writeFileSync(data + '.🦈🔑🪪', Cryptography.object.encryptObject(idObjectFile, key), "utf8")
+                        }
+                    } else { throw new Error("Enexpected return value from prepareSave() in the encryption flow") }
+                    break;
+                default:
+                    throw new Error("Value isString was neither true or false")
             }
+
+            // if we need to delete the original file
+            if (deleteOriginal) {
+                fs.unlinkSync(data)
+            }
+
+            // we return wether the file exists so we only return true if the file has been created
+            return fs.existsSync(data + '.🦈🔑')
         } catch (err) {
             // TODO: maybe use console.log() to show the message, and then use process.exit(1) instead of throwing an error.
             console.log("There was an error writing the file(s), or outputting the string")
             throw new Error(err)
         }
-        // if we need to delete the original file
-        try {
-            if (deleteOriginal) {
-                fs.unlinkSync(data)
-            }
-        } catch (err) {
-            // Something went wrong deleting the original file, it is not serious enough to throw an error or exit the program.
-            console.log("Error deleting original file")
-            console.error(err)
-        }
-        // we return wether the file exists so we only return true if the file has been created
-        return fs.existsSync(data + '.🦈🔑')
     }
 
     /**
@@ -857,7 +853,7 @@ class Cryptography {
      * @param {boolean} isString If the data is a string and not a file(path) - set to true if --string is used
      * @returns {string} Decrypted data
      */
-    static async decryptData(key, data, isString) {
+    static decryptData(key, data, isString) {
         // declare dataToDecrypt for use later
         let dataToDecrypt;
         try {
@@ -878,8 +874,7 @@ class Cryptography {
             let jsonData = Cryptography.object.readFileObject(dataToDecrypt)
 
             // Calculate the hashed key
-            let hashKey = await Cryptography.calculateKey(key, jsonData.features, false)
-
+            let hashKey = Cryptography.calculateKey(key, jsonData.features, false)
 
             // Check if the file is secured with TOTP
             // TODO: Gotta think of a better way of implementing this, as of right now - anyone with the source code, JS knowlege, and time can bypass it.
@@ -889,12 +884,11 @@ class Cryptography {
                 let b32key = base32.encode(hashKey).toString().replace(/=/g, "")
                 let otp = new Cryptography.totp(b32key) // create otp
 
-                const rl = readline.createInterface({ input, output });
-                const userotp = await rl.question('Enter the code found in your authenticator app ');
-                rl.close();
+                // Ask the user for their TOTP code
+                var userotp = readlineSync.questionInt("Enter the code found in your authenticator app ")
 
                 // Check if user input is correct, if not - stop and throw error
-                if (!otp.verify(userotp)) {
+                if (!otp.verify(userotp.toString())) {
                     throw new Error("Incorrect TOTP!")
                 } // Continue and allow decryption
             }
@@ -924,10 +918,10 @@ class Cryptography {
      * @param {boolean} [isString=false] 
      * @param {boolean} [doCopy=false] 
      */
-    static async decrypt(key, file, deleteOriginal = false, isString = false, doCopy = false) {
+    static decrypt(key, file, deleteOriginal = false, isString = false, doCopy = false) {
         let originalText; // We declare it here first so we can use it in the low later.
         // Decrypt the file / string
-        originalText = await Cryptography.decryptData(key, file, isString)
+        originalText = Cryptography.decryptData(key, file, isString)
 
         if (isString) { // Return (and copy) string
             if (doCopy) {
@@ -937,10 +931,11 @@ class Cryptography {
         } else { // Write (and copy) file       
             try {
                 // Check if file exists, if it does - ask for permission to overwrite
-                if (await Cryptography.prepareSave(file, "decrypt")) {
+                if (Cryptography.prepareSave(file, "decrypt")) {
                     // We are ready to save
                     fs.writeFileSync(file.replace('.🦈🔑', ''), originalText)
-                        // Copy to clipboard
+
+                    // Copy to clipboard
                     if (doCopy) {
                         clipboard.writeSync(originalText)
                     }
@@ -993,7 +988,7 @@ class Cryptography {
                 // Stringify the id object and copy it to the clipboard
                 clipboard.writeSync(JSON.stringify(id, null, 2))
             }
-            return id
+            return id // Return the id object
         } else // TODO: This is not serious enough to stop the program, so write an exception handler on the other end.
         { throw new Error("File does not exist.") }
     }

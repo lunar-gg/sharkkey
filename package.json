@@ -21,28 +21,16 @@
     ],
     "author": "Lunar",
     "license": "UNLICENSED",
-    "pkg": {
-        "scripts": [
-            "index.js",
-            "🦈.js",
-            "🐟/*.js"
-        ],
-        "targets": [
-            "node16-win"
-        ],
-        "outputPath": "dist"
-    },
     "dependencies": {
         "clipboardy": "^3.0.0",
         "commander": "^11.0.0",
         "esbuild": "0.18.13",
-        "hwid": "^0.4.1",
         "ip": "^1.1.8",
         "md6-hash": "^1.0.0",
+        "node-machine-id": "^1.1.12",
         "qrcode-terminal": "^0.12.0",
-        "systeminformation": "^5.18.7",
-        "totp.js": "^0.0.1",
-        "yesno": "^0.4.0"
+        "readline-sync": "^1.4.10",
+        "totp.js": "^0.0.1"
     },
     "devDependencies": {
         "eslint": "^8.45.0",

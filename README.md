@@ -12,13 +12,16 @@
 ### Resonably secure encryption
 
 Changelog 7/19/23 03~ :
-* General code quality improvements
+* General code quality improvements (Ongoing)
 * Switched from own hex encoding \ decoding to node:buffer
 * Completely switched away from CryptoJS in favour of the native node:crypto
 * Wrote JSDocs for everything in 🐟/cryptography.js, 🐟/compression.js, index.js, and 🦈.js
 * Deleted 🐟/generic.js and moved functions to 🦈.js
 * Improved the encryptObject function by switching to aes-256-cbc (same goes for the decryptObject function)
 * Wrote comments for everything in 🐟/cryptography.js, 🐟/compression.js, index.js, and 🦈.js
+* switched to readlineSync for gathering user input (2fa, Y/N)
+* Created 🐟/synchronousOsInfo.js (Blatantly stolen and picked apart from: sebhildebrandt/systeminformation)
+* Removed unused dependencies (hwid, systeminformation, yesno, crypto-js)
 
 Changelog 7/17/23 13~ :
 * TOTP (Time-based one time password) (example: Google Authentacater)

@@ -3,6 +3,7 @@ dist
 bundle
 coverage
 logs
+testing.js
 *.log
 tem.js
 npm-debug.log*

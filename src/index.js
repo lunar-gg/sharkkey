@@ -183,7 +183,7 @@ program // Set basic info
         // Check if we're gonna be using an ID file to decrypt
         if (Object.prototype.hasOwnProperty.call(options, 'useID') || options.useID) {
             // Use ID to decrypt fiie
-            // TODO: Implement logic
+            // 🦈--> Implement logic
             throw new Error("Not implemented")
         } else { // Dont use ID to decrypt file
             let originalText = await shark.cryptography.decrypt(

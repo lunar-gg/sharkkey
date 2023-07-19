@@ -32,7 +32,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 let _platform = process.platform;
-class util {
+class Util {
     static getValue(lines, property, separator, trimmed, lineMatch) {
         separator = separator || ':';
         property = property.toLowerCase();
@@ -109,19 +109,19 @@ function handleLinux(result) {
 function handleWin(result) {
     let string = execSync('powershell -command "Get-CimInstance Win32_OperatingSystem | select Caption,SerialNumber,BuildNumber,ServicePackMajorVersion,ServicePackMinorVersion | fl"')
     let lines = string.toString().split('\r\n')
-    result.distro = util.getValue(lines, 'Caption', ':').trim();
-    result.serial = util.getValue(lines, 'SerialNumber', ':').trim();
-    result.build = util.getValue(lines, 'BuildNumber', ':').trim();
+    result.distro = Util.getValue(lines, 'Caption', ':').trim();
+    result.serial = Util.getValue(lines, 'SerialNumber', ':').trim();
+    result.build = Util.getValue(lines, 'BuildNumber', ':').trim();
     result.codename = "Microsoft Windows"
     return result
 }
 
 function handleDarwin(result) {
     let lines = execSync('sw_vers; sysctl kern.ostype kern.osrelease kern.osrevision kern.uuid').toString().split('\n');
-    result.serial = util.getValue(lines, 'kern.uuid');
-    result.distro = util.getValue(lines, 'ProductName');
-    result.release = (util.getValue(lines, 'ProductVersion', ':', true, true) + ' ' + util.getValue(lines, 'ProductVersionExtra', ':', true, true)).trim();
-    result.build = util.getValue(lines, 'BuildVersion');
+    result.serial = Util.getValue(lines, 'kern.uuid');
+    result.distro = Util.getValue(lines, 'ProductName');
+    result.release = (Util.getValue(lines, 'ProductVersion', ':', true, true) + ' ' + Util.getValue(lines, 'ProductVersionExtra', ':', true, true)).trim();
+    result.build = Util.getValue(lines, 'BuildVersion');
     result.codename = 'macOS';
     return result
 }

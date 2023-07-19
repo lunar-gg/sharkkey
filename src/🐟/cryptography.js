@@ -541,7 +541,7 @@ class Cryptography {
 
             // Declare the variables we're going to use for the encryption
             const key = Buffer.from(parsedKey, 'hex'); // Convert the parsedKey to a Buffer
-            const iv = Buffer.alloc(16); // TODO: Be less stupid
+            const iv = Buffer.alloc(16); // 🦈--> Be less stupid
 
             // Create the cipher and encrypt the data
             const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
@@ -669,7 +669,7 @@ class Cryptography {
             }
 
             // Setup TOTP
-            // TODO: Find a better way to implement this more securely.
+            // 🦈--> Find a better way to implement this more securely.
             if (useTOTP) {
                 jsonData.TOTP = true
                     // Hash the key using fish128
@@ -782,7 +782,7 @@ class Cryptography {
                     return true
                 case false:
                     // Unable to proceed, as we can't overwrite the files.
-                    // TODO: maybe use console.log() to show the message, and then use process.exit(1) instead of throwing an error.
+                    // 🦈--> maybe use console.log() to show the message, and then use process.exit(1) instead of throwing an error.
                     throw new Error("You chose not to overwrite the file, please rename or move the file yourself, and then try again.");
                 default:
                     throw new Error("When asked for permission to overwrite, the user input was invalid.")
@@ -803,8 +803,8 @@ class Cryptography {
      * @param {boolean} doCopy If we should copy the output to the clipboard
      * @returns {object} Object that contains information about the operation (file location +++)
      */
-    // TODO: Add return statements with objects
-    // TODO: switch to AES-256-GCM
+    // 🦈--> Add return statements with objects
+    // 🦈--> switch to AES-256-GCM
     static encrypt(key, data, deleteOriginal = false, features = [], createIDFile = false, isString = false, doCopy = false) {
         let encrypted = Cryptography.encryptData(data, key, isString, features)
         try {
@@ -840,7 +840,7 @@ class Cryptography {
             // we return wether the file exists so we only return true if the file has been created
             return fs.existsSync(data + '.🦈🔑')
         } catch (err) {
-            // TODO: maybe use console.log() to show the message, and then use process.exit(1) instead of throwing an error.
+            // 🦈--> maybe use console.log() to show the message, and then use process.exit(1) instead of throwing an error.
             console.log("There was an error writing the file(s), or outputting the string")
             throw new Error(err)
         }
@@ -877,7 +877,7 @@ class Cryptography {
             let hashKey = Cryptography.calculateKey(key, jsonData.features, false)
 
             // Check if the file is secured with TOTP
-            // TODO: Gotta think of a better way of implementing this, as of right now - anyone with the source code, JS knowlege, and time can bypass it.
+            // 🦈--> Gotta think of a better way of implementing this, as of right now - anyone with the source code, JS knowlege, and time can bypass it.
             if (jsonData.TOTP) {
                 // TOTP is enabled, Ask the user for their auth code, and validate it
                 // base32 encode
@@ -986,7 +986,7 @@ class Cryptography {
                 clipboard.writeSync(JSON.stringify(id, null, 2))
             }
             return id // Return the id object
-        } else // TODO: This is not serious enough to stop the program, so write an exception handler on the other end.
+        } else // 🦈--> This is not serious enough to stop the program, so write an exception handler on the other end.
         { throw new Error("File does not exist.") }
     }
 }

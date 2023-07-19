@@ -27,7 +27,7 @@ describe("files", () => {
             expect(shark.cryptography.encrypt(hk, "./jestFileId.txt", true, [], true, false, false))
                 .toBe(true)
         })
-        /* TODO: fix this- it works everywhere else than Github Actions lmao
+        /* 🦈--> fix this- it works everywhere else than Github Actions lmao
         test("encrypt file with totp", () => {
             fs.writeFileSync("jestFileTOTP.txt", "hello world", "utf8")
             let hk = shark.cryptography.calculateKey(

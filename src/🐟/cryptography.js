@@ -728,7 +728,7 @@ class Cryptography {
             rawEncrypted = Buffer.from(
                     buff.update(dataToEncrypt, 'utf8', 'hex') + buff.final('hex')
                 ).toString('base64') // Encrypts data and converts to hex and base64
-            encrypted = Cryptography.object.writeFileObject(rawEncrypted, key, features)
+            encrypted = Cryptography.object.writeFileObject(rawEncrypted, key, features, isString ? "string" : data)
             return Buffer.from(encrypted, "utf8").toString("base64") // encrypts to base64
         } catch (err) {
             console.log("Error in encryptData! - isString:", isString)

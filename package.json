@@ -5,7 +5,7 @@
     "main": "./src/index.js",
     "bin": "./src/index.js",
     "scripts": {
-        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --maxWorkers=2 --runInBand",
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --runInBand",
         "build": " ./node_modules/.bin/esbuild ./src/index.js --bundle --outdir=bundle --platform=node && pkg -t node16-win-x64  ./bundle/index.js --compress GZip -o dist/sharkkey-win-x64 && pkg -t node16-linux-x64  ./bundle/index.js --compress GZip  -o dist/sharkkey-linux-x64 && pkg -t node16-macos-x64  ./bundle/index.js --compress GZip  -o dist/sharkkey-macos-x64",
         "build-win-path": " .\\node_modules\\.bin\\esbuild .\\src\\index.js --bundle --outdir=bundle --platform=node && pkg -t node16-win-x64  .\\bundle\\index.js --compress GZip -o dist/sharkkey-win-x64 && pkg -t node16-linux-x64  .\\bundle\\index.js --compress GZip  -o dist/sharkkey-linux-x64",
         "build-arm": "pkg -t node16-linux-arm64  .\\bundle\\index.js --compress GZip  -o dist/sharkkey-linux-arm64"

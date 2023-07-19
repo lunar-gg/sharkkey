@@ -2,9 +2,9 @@ export default {
     collectCoverage: true,
     coverageReporters: ['json'],
     moduleDirectories: [
-        "node_modules",
-        "src"
+        "node_modules"
     ],
-    roots: ['src'],
+    //   roots: ['src'],
+    resetMocks: true,
     testEnvironment: 'node',
 }

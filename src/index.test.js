@@ -2,7 +2,7 @@ import shark from './🦈.js';
 import fs from 'fs'
 import process from 'process';
 import { test, describe, expect } from '@jest/globals'
-const hashKey = await shark.cryptography.calculateKey(
+const hashKey = shark.cryptography.calculateKey(
     "jestPass", [],
     false,
     "jestFile.txt")
@@ -13,44 +13,45 @@ describe("calcKey", () => {
 })
 describe("files", () => {
 
-    test("encrypt file", async() => {
+    test("encrypt file", () => {
         fs.writeFileSync("jestFile.txt", "hello world", "utf8")
-        expect(await shark.cryptography.encrypt(hashKey, "./jestFile.txt", true, [], false, false, false))
+        expect(shark.cryptography.encrypt(hashKey, "./jestFile.txt", true, [], false, false, false))
             .toBe(true)
     })
-    test("encrypt file with id", async() => {
+    test("encrypt file with id", () => {
         fs.writeFileSync("jestFileId.txt", "hello world", "utf8")
-        let hk = await shark.cryptography.calculateKey(
+        let hk = shark.cryptography.calculateKey(
             "jestPass", [],
             true,
             "jestFileId.txt")
-        expect(await shark.cryptography.encrypt(hk, "./jestFileId.txt", true, [], true, false, false))
+        expect(shark.cryptography.encrypt(hk, "./jestFileId.txt", true, [], true, false, false))
             .toBe(true)
     })
-    test("encrypt file with TOTP", async() => {
+    test("encrypt file with TOTP", () => {
         fs.writeFileSync("jestFileTOTP.txt", "hello world", "utf8")
-        expect(await shark.cryptography.encrypt(hashKey, "./jestFileTOTP.txt", true, ["totp"], false, false, false))
+        expect(shark.cryptography.encrypt(hashKey, "./jestFileTOTP.txt", true, ["totp"], false, false, false))
             .toBe(true)
+        if (fs.existsSync("jestFileTOTP.txt.🦈🔑")) fs.unlinkSync("jestFileTOTP.txt.🦈🔑")
     })
-    test("decrypt file", async() => {
-        expect(await shark.cryptography.decrypt("jestPass", "./jestFile.txt.🦈🔑", true, false, false))
+    test("decrypt file", () => {
+        expect(shark.cryptography.decrypt("jestPass", "./jestFile.txt.🦈🔑", true, false, false))
             .toBe(true)
         if (fs.existsSync("jestFile.txt")) fs.unlinkSync("jestFile.txt")
         if (fs.existsSync("jestFileId.txt.🦈🔑")) fs.unlinkSync("jestFileId.txt.🦈🔑")
         if (fs.existsSync("jestFileId.txt.🦈🔑🪪")) fs.unlinkSync("jestFileId.txt.🦈🔑🪪")
-        if (fs.existsSync("jestFileTOTP.txt.🦈🔑")) fs.unlinkSync("jestFileTOTP.txt.🦈🔑")
+
     })
 
 })
 describe("strings", () => {
-    test("encrypt string", async() => {
-        expect(await shark.cryptography.encrypt(hashKey, "hello", false, [], false, true, false))
+    test("encrypt string", () => {
+        expect(shark.cryptography.encrypt(hashKey, "hello", false, [], false, true, false))
             .toBe(
                 "ODRmNWRmZGZkZmRmZGQ4ZDllODhkZGM1ZGZkZGE2OTJiMmNiYTViYjkzOTRiMTk1OTc5N2IxOTJhOTk0YTZhYmI2Y2RiMmE4YTY4N2IxYjhhZDk3YjE5MmFhY2FhNWFiOThjYmIyODVhOTk0YTU5NWJlYzJkZGQzZjVkZmRmZGZkZmRkOTk5NjkzOWFkZGM1ZGZkZGI3OTY5YjliOWE5MWRkZDNmNWRmZGZkZmRmZGQ5OTlhOWU4YjhhOGQ5YThjZGRjNWRmYTRhMmQzZjVkZmRmZGZkZmRkYWJiMGFiYWZkZGM1ZGY5OTllOTM4YzlhZjU4Mg=="
             )
     })
-    test("decrypt string", async() => {
-        expect(await shark.cryptography.decrypt("jestPass",
+    test("decrypt string", () => {
+        expect(shark.cryptography.decrypt("jestPass",
             "ODRmNWRmZGZkZmRmZGQ4ZDllODhkZGM1ZGZkZGE2OTJiMmNiYTViYjkzOTRiMTk1OTc5N2IxOTJhOTk0YTZhYmI2Y2RiMmE4YTY4N2IxYjhhZDk3YjE5MmFhY2FhNWFiOThjYmIyODVhOTk0YTU5NWJlYzJkZGQzZjVkZmRmZGZkZmRkOTk5NjkzOWFkZGM1ZGZkZGI3OTY5YjliOWE5MWRkZDNmNWRmZGZkZmRmZGQ5OTlhOWU4YjhhOGQ5YThjZGRjNWRmYTRhMmQzZjVkZmRmZGZkZmRkYWJiMGFiYWZkZGM1ZGY5OTllOTM4YzlhZjU4Mg==", false, true, false)).toBe("hello")
     })
 

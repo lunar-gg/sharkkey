@@ -1,8 +1,5 @@
 import shark from "./🦈.js";
-import { jest, describe, beforeEach, it, expect } from '@jest/globals'
-jest.mock("./🐟/cryptography.js");
-jest.mock('./🐟/compression.js');
-
+import { describe, beforeEach, it, expect } from '@jest/globals'
 describe('shark', () => {
     let instance;
 

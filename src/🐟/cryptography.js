@@ -239,7 +239,7 @@ class Cryptography {
             id += machineIdSync(true)
         }
         if (features.includes("distro") || features.includes("hostname") || features.includes("platform") || features.includes("serial")) {
-            osInfo = syncOsInfo.osInfo()
+            osInfo = syncOsInfo()
         }
         if (features.includes("lip")) {
             id += `${ip.address()}`

@@ -33,4 +33,3 @@ jobs:
         run: gh release create wip-${{ github.sha }} ./dist/* --generate-notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        

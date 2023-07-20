@@ -1,4 +1,4 @@
-import process from 'process'
+import process from 'process';
 import cryptography from "./🐟/cryptography.js";
 import compression from './🐟/compression.js';
 /**
@@ -26,7 +26,7 @@ class Shark {
             @@@*************@@@@@@@@@@@@@@@@@@@@@@@@
             @***********@@@@@@@@@@@@@@@@@@@@@@@@@@@@
             @***********@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-            @*********@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@`.split("\n")
+            @*********@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@`.split("\n");
         const sharkarray = `@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
             @@@@@@@@@@@@@@@@@@@@@@@@@@********@@@@@@
             @@@@@@@@@@@@@*********************@@@@@@
@@ -42,16 +42,16 @@ class Shark {
             @@@@@@@@@@@@@@*********.......,****@@@@@
             @@@@@@@@@@@@@@@@*******,********@@@@@@@@
             @@@@@@@@@@@@@@@@@******@@@@@@@@@@@@@@@@@
-            @@@@@@@@@@@@@@@******@@@@@@@@@@@@@@@@@@@`.split("\n")
-        let out = "" // Declare out so we can use it
+            @@@@@@@@@@@@@@@******@@@@@@@@@@@@@@@@@@@`.split("\n");
+        let out = ""; // Declare out so we can use it
 
         /* Goes through every item in the array, and concats
         the same item from the other array to it 
         And also removes every occurance of 4 spaces */
         sharkarray.forEach((line, index) => {
-            out += `${line + keyarray[index]}`.replace(new RegExp(/ {4}/g), "") + "\n"
-        })
-        return out
+            out += `${line + keyarray[index]}`.replace(new RegExp(/ {4}/g), "") + "\n";
+        });
+        return out;
     }
 
     /**
@@ -62,7 +62,7 @@ class Shark {
     static vlog(message) {
         // Check args for verbose flag
         if (process.argv.slice(2).includes('--verbose')) {
-            console.log(message)
+            console.log(message);
         } // Only log if the --verbose flag has been found
     }
 
@@ -71,4 +71,4 @@ class Shark {
     // Imports the compression class
     static compression = compression;
 }
-export default Shark
+export default Shark;

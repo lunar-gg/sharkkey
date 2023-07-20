@@ -1,22 +1,22 @@
 // Native imports
 import process from 'node:process';
-import crypto from 'node:crypto'
-import fs from 'node:fs'
-import path from 'node:path'
-import os from 'node:os'
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
 import { Buffer } from 'node:buffer';
 // First party Imports
-import syncOsInfo from './synchronousOsInfo.js'
+import syncOsInfo from './synchronousOsInfo.js';
 // Third party imports
-import readlineSync from 'readline-sync'
+import readlineSync from 'readline-sync';
 import md6Hash from 'md6-hash';
 import TOTP from 'totp.js';
-import ip from 'ip'
-import base32 from 'thirty-two'
-import clipboard from 'clipboardy'
-import qrcode from 'qrcode-terminal'
-import nodeMachineId from 'node-machine-id'
-const { machineIdSync } = nodeMachineId
+import ip from 'ip';
+import base32 from 'thirty-two';
+import clipboard from 'clipboardy';
+import qrcode from 'qrcode-terminal';
+import nodeMachineId from 'node-machine-id';
+const { machineIdSync } = nodeMachineId;
 // Declare idObjectFile so we can use it globally
 let idObjectFile;
 
@@ -36,7 +36,7 @@ class Cryptography {
          * @returns {string} MD6 hashed string
          */
         static getMD6(string, size) {
-            return md6Hash(string, { size: size })
+            return md6Hash(string, { size: size });
         }
 
         /**
@@ -52,7 +52,7 @@ class Cryptography {
                 /** @type {string} shake128 hash of data */
                 let baseHash = crypto.createHash('shake128')
                     .update(data, inputEncoding)
-                    .digest('hex')
+                    .digest('hex');
 
                 /** @type {string[]} array of strings, containing different parts of baseHash */
                 let shitedHashParts = [
@@ -60,7 +60,7 @@ class Cryptography {
                     Cryptography.shift(baseHash.slice(8, 16)),
                     Cryptography.shift(baseHash.slice(16, 24)),
                     Cryptography.shift(baseHash.slice(24, 32))
-                ]
+                ];
 
                 /** 
                  * combines and shifts the shiftedHashParts into one hash
@@ -85,7 +85,7 @@ class Cryptography {
                         .digest('hex')
                     ).toString()
 
-                ).digest('hex')
+                ).digest('hex');
 
                 /** 
                  * gets the middle part of shiftedCombinedHashes,
@@ -98,13 +98,13 @@ class Cryptography {
                         Cryptography.shift(
                             shiftedCombinedHashes.substring(8, 24)
                         )
-                    )
+                    );
                 } else {
                     return Cryptography.shift(
                         Cryptography.shift(
                             shiftedCombinedHashes
                         )
-                    )
+                    );
                 }
 
             } // baseHashLength 32, outputHashLength 16 // 32 (depends on short true\false)
@@ -198,7 +198,7 @@ class Cryptography {
                     )
                 );
             } // baseHashLength 256, outputHashLength 256
-    }
+    };
 
     /**
      * Turns a file path into a object containing filename, extention, and path
@@ -213,7 +213,7 @@ class Cryptography {
             filename,
             extension,
             directoryPath
-        }
+        };
     }
 
     /**
@@ -236,22 +236,22 @@ class Cryptography {
         let osInfo;
         if (features.includes("hwid")) {
             // get hwid
-            id += machineIdSync(true)
+            id += machineIdSync(true);
         }
         if (features.includes("distro") || features.includes("hostname") || features.includes("platform") || features.includes("serial")) {
-            osInfo = syncOsInfo()
+            osInfo = syncOsInfo();
         }
         if (features.includes("lip")) {
-            id += `${ip.address()}`
+            id += `${ip.address()}`;
         }
         if (features.includes("username")) {
-            id += `${os.userInfo().username}`
+            id += `${os.userInfo().username}`;
         }
         if (features.includes("timezone")) {
-            id += `${Intl.DateTimeFormat().resolvedOptions().timeZone}`
+            id += `${Intl.DateTimeFormat().resolvedOptions().timeZone}`;
         }
         if (features.includes("locale")) {
-            id += `${Intl.DateTimeFormat().resolvedOptions().locale}`
+            id += `${Intl.DateTimeFormat().resolvedOptions().locale}`;
         }
         if (features.includes("distro")) {
             id += `${osInfo.distro}`;
@@ -266,12 +266,12 @@ class Cryptography {
             id += `${osInfo.serial}`;
         }
         if (features.includes("filename")) {
-            id += `${file}`
+            id += `${file}`;
         }
 
         // Remove the spaces from the ID string
-        id = id.replace(/ /g, "")
-        return id
+        id = id.replace(/ /g, "");
+        return id;
     }
 
     /**
@@ -284,26 +284,26 @@ class Cryptography {
      */
     static calculateKey(password, featuresArray, createIDFile, file) {
         // Generate the ID string
-        let id = Cryptography.createIDString(featuresArray, file)
+        let id = Cryptography.createIDString(featuresArray, file);
 
         // Turn the ID into a SHA256 hash
-        id = `${crypto.createHash('sha256').update(id).digest('hex')}`
+        id = `${crypto.createHash('sha256').update(id).digest('hex')}`;
 
         // Handle the ID - and turn it into an object with the two halves
-        let idObject = Cryptography.handle.identifierHash(id)
+        let idObject = Cryptography.handle.identifierHash(id);
 
         // Combine the two halves, and do it again
-        idObject = Cryptography.handle.identifierHash(`${idObject[0]}${idObject[1]}`)
+        idObject = Cryptography.handle.identifierHash(`${idObject[0]}${idObject[1]}`);
 
         // Declare the variables so we can use them later
-        let halfId = idObject[0]
-        let halfId2 = idObject[1]
+        let halfId = idObject[0];
+        let halfId2 = idObject[1];
 
         if (createIDFile) { // if we need to create an ID file along with the encrypted file
 
             // Generate the timestamp for when the ID file should be invalid
-            let expiresTimestamp = Cryptography.object.addExpire(1, "hours")
-            let filePath = Cryptography.getFilePath(file) // Get the full file path for the file we're encrypting
+            let expiresTimestamp = Cryptography.object.addExpire(1, "hours");
+            let filePath = Cryptography.getFilePath(file); // Get the full file path for the file we're encrypting
 
             // Set the idObjectFile object
             idObjectFile = {
@@ -316,7 +316,7 @@ class Cryptography {
                     { filename: filePath.filename, md5: Cryptography.hash.fish64(fs.readFileSync(file, "utf8")) }
                 ],
                 "expires": `${expiresTimestamp}`
-            }
+            };
         }
 
         // Work with the MD6 hash of the user's chosen key
@@ -330,9 +330,9 @@ class Cryptography {
         );
 
         // Combine everything and shift by the value of the first integer found in the combined string
-        let combined = `${halfId}${md6key}${halfId2}`
-        let final = Cryptography.shift(combined)
-        return final // Return the final key
+        let combined = `${halfId}${md6key}${halfId2}`;
+        let final = Cryptography.shift(combined);
+        return final; // Return the final key
     }
 
     /**
@@ -362,40 +362,40 @@ class Cryptography {
          */
         static md6(md6key) {
             // Reverse md5
-            md6key = md6key.split("").reverse().join("")
+            md6key = md6key.split("").reverse().join("");
 
             // Shift it by its own first int
-            md6key = Cryptography.shift(md6key)
+            md6key = Cryptography.shift(md6key);
 
             // Reverse md5
-            md6key = md6key.split("").reverse().join("")
+            md6key = md6key.split("").reverse().join("");
 
             // split by every other - into two arrays (xx, yy)
-            let zz = md6key.split('') // Array of every char
+            let zz = md6key.split(''); // Array of every char
             let xx = zz.filter((element, index) => {
                 return index % 2 === 0;
-            })
+            });
             let yy = zz.filter((element, index) => {
                 return index % 2 !== 0;
             });
 
             // Convert the two "halves" of the md5 hash back into strings
-            let md6h1 = xx.join('').toString()
-            let md6h2 = yy.join('').toString()
+            let md6h1 = xx.join('').toString();
+            let md6h2 = yy.join('').toString();
 
             // split md6h1 into two strings, and then shift them individually,
             // lastly converting them back into a string called md6h1final
-            let md6h1final = `${Cryptography.shift(md6h1.slice(0, md6h1.length / 2))}${Cryptography.shift(md6h1.slice(md6h1.length / 2, md6h1.length))}`
+            let md6h1final = `${Cryptography.shift(md6h1.slice(0, md6h1.length / 2))}${Cryptography.shift(md6h1.slice(md6h1.length / 2, md6h1.length))}`;
 
             // split md6h2 into two strings, and then shift them individually,
             // lastly converting them back into a string called md6h2final
-            let md6h2final = `${Cryptography.shift(md6h2.slice(0, md6h2.length / 2))}${Cryptography.shift(md6h2.slice(md6h2.length / 2, md6h2.length))}`
+            let md6h2final = `${Cryptography.shift(md6h2.slice(0, md6h2.length / 2))}${Cryptography.shift(md6h2.slice(md6h2.length / 2, md6h2.length))}`;
 
             // combine the 2 halves, and then shift, set md6key to the output
-            md6key = Cryptography.shift(`${md6h1final}${md6h2final}`)
+            md6key = Cryptography.shift(`${md6h1final}${md6h2final}`);
 
             // return the result
-            return md6key
+            return md6key;
         }
 
         /**
@@ -406,32 +406,32 @@ class Cryptography {
          */
         static identifierHash(id) {
             // split by every other char - into two arrays (x, y)
-            let arr = id.split('')
+            let arr = id.split('');
             let x = arr.filter((element, index) => {
                 return index % 2 === 0;
-            })
+            });
             let y = arr.filter((element, index) => {
                 return index % 2 !== 0;
             });
 
             // Turn them back into strings, and shift them individually
-            let halfId = Cryptography.shift(x.join(''))
-            let halfId2 = Cryptography.shift(y.join(''))
+            let halfId = Cryptography.shift(x.join(''));
+            let halfId2 = Cryptography.shift(y.join(''));
 
             if (id.length === 64) {
                 // The two "halves" of the hwid
                 // We are by design throwing away 32 chars here, to make
                 // hard to reverse it.
                 /** last 16 chars of string */
-                halfId = x.join('').slice(16, x.join('').length)
+                halfId = x.join('').slice(16, x.join('').length);
 
                 /** First 16 chars of string */
-                halfId2 = y.join('').slice(0, y.join('').length / 2)
+                halfId2 = y.join('').slice(0, y.join('').length / 2);
             }
             // Return object with the half ids
-            return { 0: halfId, 1: halfId2 }
+            return { 0: halfId, 1: halfId2 };
         }
-    }
+    };
 
     /**
      * A class that provides functions to obfuscate and deobfuscate hex strings
@@ -520,7 +520,7 @@ class Cryptography {
             // Return the deobfuscated string
             return deobfuscatedString;
         };
-    }
+    };
 
     /**
      * A class that provides functions to encrypt and decrypt objects
@@ -534,18 +534,18 @@ class Cryptography {
          * @returns {string} Encrypted and obfuscated string
          */
         static encryptObject(obj, passphrase) {
-            const jsonString = JSON.stringify(obj) // Stringify the object
+            const jsonString = JSON.stringify(obj); // Stringify the object
 
             // Parses the given passphrase into a pbkdf2 (sha512) hash
-            const parsedKey = Cryptography.getKeyFromPassphrase(passphrase)
+            const parsedKey = Cryptography.getKeyFromPassphrase(passphrase);
 
             // Create the cipher and encrypt the data
             const iv = Buffer.from(Cryptography.hash.fish64(parsedKey, "utf8", true), 'utf8');
             const cipher = crypto.createCipheriv('aes-256-gcm', Cryptography.hash.fish64(parsedKey, "utf8", false), iv);
             let enc = cipher.update(jsonString, 'utf8', 'hex'),
                 tag;
-            enc += cipher.final('hex')
-            tag = cipher.getAuthTag()
+            enc += cipher.final('hex');
+            tag = cipher.getAuthTag();
             let rawEncrypted = enc + "$$" + tag.toString('hex') + "$$" + iv.toString('hex');
             // Obfuscate the encrypted string
             let encryptedString = Cryptography.hex.obfuscateHexString(rawEncrypted);
@@ -567,10 +567,10 @@ class Cryptography {
             encryptedString = Cryptography.hex.unobfuscateHexString(encryptedString);
 
             // Create the decipher
-            let cipherSplit = encryptedString.split("$$")
-            let text = cipherSplit[0]
-            let tag = Buffer.from(cipherSplit[1], 'hex')
-            let iv = Buffer.from(cipherSplit[2], 'hex')
+            let cipherSplit = encryptedString.split("$$");
+            let text = cipherSplit[0];
+            let tag = Buffer.from(cipherSplit[1], 'hex');
+            let iv = Buffer.from(cipherSplit[2], 'hex');
             const decipher = crypto.createDecipheriv('aes-256-gcm', Cryptography.hash.fish64(parsedKey, "utf8", false), iv);
 
             // Decrypt the data
@@ -605,7 +605,7 @@ class Cryptography {
                     expirationDate.setFullYear(expirationDate.getFullYear() + duration);
                     break;
                 default:
-                    throw new Error("Required parameter <unit> in addExpire() was undefined, or not set correctly.")
+                    throw new Error("Required parameter <unit> in addExpire() was undefined, or not set correctly.");
             }
 
             // Return expirationDate (instanceof Date)
@@ -618,15 +618,15 @@ class Cryptography {
          * @returns 
          */
         static hasExpired(jsonObject) {
-            if (!jsonObject.expires) throw new Error("Object doesn't have a <expires> key.")
+            if (!jsonObject.expires) throw new Error("Object doesn't have a <expires> key.");
             try {
                 if (jsonObject.expires instanceof Date) {
                     const currentTime = new Date();
                     return currentTime > jsonObject.expires;
                 }
             } catch (err) {
-                console.log(err)
-                throw new Error("An error occured whilst trying to check if the object has expired.")
+                console.log(err);
+                throw new Error("An error occured whilst trying to check if the object has expired.");
             }
             return false;
         }
@@ -641,13 +641,13 @@ class Cryptography {
                 // Unobfuscate the data
                 const unobfuscatedHex = Cryptography.hex.unobfuscateHexString(rawFileData);
                 // Decode from hex to utf8
-                const decodedString = Buffer.from(unobfuscatedHex, "hex").toString("utf8")
-                    // Parse the JSON object
+                const decodedString = Buffer.from(unobfuscatedHex, "hex").toString("utf8");
+                // Parse the JSON object
                 const parsedObject = JSON.parse(decodedString);
                 return parsedObject;
             } catch (err) {
-                console.log(err)
-                throw new Error("An error occured while trying to read the file object.")
+                console.log(err);
+                throw new Error("An error occured while trying to read the file object.");
             }
         }
 
@@ -660,42 +660,42 @@ class Cryptography {
          * @returns {string} Hex encoded and obfuscated JSON object
          */
         static writeFileObject(rawEncrypted, key, features = [], file = "string") {
-            let showFile = "Hidden"
-            let useTOTP = features.includes("totp") || false
-            if (features.includes("filename")) { showFile = file }
+            let showFile = "Hidden";
+            let useTOTP = features.includes("totp") || false;
+            if (features.includes("filename")) { showFile = file; }
 
             let jsonData = {
                 "raw": `${rawEncrypted}`,
                 "file": showFile,
                 "features": features,
                 "TOTP": false
-            }
+            };
 
             // Setup TOTP
             // 🦈--> Find a better way to implement this more securely.
             if (useTOTP) {
-                jsonData.TOTP = true
-                    // Hash the key using fish128
-                let hashedKey = Cryptography.hash.fish128(key, "utf8")
-                    // base32 encode
-                let b32key = base32.encode(hashedKey).toString().replace(/=/g, "")
-                    // create otp
-                let otp = new Cryptography.totp(b32key)
-                    // generate a URL useable by Google Authenticator
-                let gaUrl = otp.gaURL(decodeURIComponent(path.basename(file).replace(/\./g, "_")), encodeURIComponent(os.userInfo().username + "@🦈🔑"))
-                    // Log to console to show the user
-                console.log("✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨")
-                qrcode.generate(gaUrl, { small: true }) // Generate and show QR Code
-                console.log("Scan above QR code with Google Authenticator, or go to the url manually, or use the key in your auth app of choice.")
-                console.log("URL:", gaUrl)
-                console.log("Key:", b32key)
+                jsonData.TOTP = true;
+                // Hash the key using fish128
+                let hashedKey = Cryptography.hash.fish128(key, "utf8");
+                // base32 encode
+                let b32key = base32.encode(hashedKey).toString().replace(/=/g, "");
+                // create otp
+                let otp = new Cryptography.totp(b32key);
+                // generate a URL useable by Google Authenticator
+                let gaUrl = otp.gaURL(decodeURIComponent(path.basename(file).replace(/\./g, "_")), encodeURIComponent(os.userInfo().username + "@🦈🔑"));
+                // Log to console to show the user
+                console.log("✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨");
+                qrcode.generate(gaUrl, { small: true }); // Generate and show QR Code
+                console.log("Scan above QR code with Google Authenticator, or go to the url manually, or use the key in your auth app of choice.");
+                console.log("URL:", gaUrl);
+                console.log("Key:", b32key);
             }
 
             // Stringify, encode to hex, and obfuscate it. - and then return it
-            let hexString = Buffer.from(JSON.stringify(jsonData, null, 4), "utf8").toString("hex")
-            return Cryptography.hex.obfuscateHexString(hexString)
+            let hexString = Buffer.from(JSON.stringify(jsonData, null, 4), "utf8").toString("hex");
+            return Cryptography.hex.obfuscateHexString(hexString);
         }
-    }
+    };
 
     /**
      * Encrypts given data and returns a  Base64 encoded hex obfuscated object that contains file / string info, and the raw encrypted data
@@ -711,14 +711,14 @@ class Cryptography {
         switch (isString) {
             // If we want to encrypt a string
             case true:
-                dataToEncrypt = data
+                dataToEncrypt = data;
                 break;
                 // If we want to encrypt a file
             case false:
-                dataToEncrypt = fs.readFileSync(data, "utf8")
+                dataToEncrypt = fs.readFileSync(data, "utf8");
                 break;
             default:
-                throw new Error("Required parameter <isString> in encryptData() was undefined, or not set correctly.")
+                throw new Error("Required parameter <isString> in encryptData() was undefined, or not set correctly.");
         }
         // Define variables so we can use them in the catch{}
         let rawEncrypted;
@@ -729,23 +729,23 @@ class Cryptography {
             const cipher = crypto.createCipheriv('aes-256-gcm', Cryptography.hash.fish64(key, "utf8", false), iv);
             let enc = cipher.update(dataToEncrypt, 'utf8', 'hex'),
                 tag;
-            enc += cipher.final('hex')
-            tag = cipher.getAuthTag()
+            enc += cipher.final('hex');
+            tag = cipher.getAuthTag();
             rawEncrypted = enc + "$$" + tag.toString('hex') + "$$" + iv.toString('hex');
-            encrypted = Cryptography.object.writeFileObject(rawEncrypted, key, features, isString ? "string" : data)
-            return Buffer.from(encrypted, "utf8").toString("base64") // encrypts to base64
+            encrypted = Cryptography.object.writeFileObject(rawEncrypted, key, features, isString ? "string" : data);
+            return Buffer.from(encrypted, "utf8").toString("base64"); // encrypts to base64
         } catch (err) {
-            console.log("Error in encryptData! - isString:", isString)
-            console.log("Relavent variables:")
-            console.log("Inputs: Data:", data)
-            console.log("Inputs: Key:", key)
-            console.log("Inputs: isString:", isString)
-            console.log("Internal: dataToEncrypt:", dataToEncrypt)
-            console.log("Internal: rawEncrypted:", rawEncrypted)
-            console.log("Internal: encrypted:", encrypted)
-            console.log("Return: encrypted (Base64):", Buffer.from(encrypted, "utf8").toString("base64"))
-            console.error(err)
-            process.exit(0)
+            console.log("Error in encryptData! - isString:", isString);
+            console.log("Relavent variables:");
+            console.log("Inputs: Data:", data);
+            console.log("Inputs: Key:", key);
+            console.log("Inputs: isString:", isString);
+            console.log("Internal: dataToEncrypt:", dataToEncrypt);
+            console.log("Internal: rawEncrypted:", rawEncrypted);
+            console.log("Internal: encrypted:", encrypted);
+            console.log("Return: encrypted (Base64):", Buffer.from(encrypted, "utf8").toString("base64"));
+            console.error(err);
+            process.exit(0);
         }
     }
 
@@ -756,24 +756,24 @@ class Cryptography {
      * @param {boolean} [createIDFile=false] if we want to create a ID file along with the encrypted file
      */
     static prepareSave(file, mode, createIDFile = false) {
-        let fileString
+        let fileString;
 
         // define fileString depending on what "mode" we're using
         switch (mode) {
             case "encrypt":
-                fileString = file + '.🦈🔑'
+                fileString = file + '.🦈🔑';
                 break;
             case "decrypt":
-                fileString = file.replace(".🦈🔑", "")
+                fileString = file.replace(".🦈🔑", "");
                 break;
             default:
-                throw new Error("Required parameter <mode> in prepareSave() is either undefined, or incorrectly set.")
+                throw new Error("Required parameter <mode> in prepareSave() is either undefined, or incorrectly set.");
         }
 
         // We test for fileString OR keyfile, as if fileString dosn't exist, but keyfile does, we're gonna get an exception.
         if (fs.existsSync(fileString) || fs.existsSync(file + '.🦈🔑🪪')) {
             // Ask user for permission to overwrite
-            const overwriteFile = readlineSync.keyInYNStrict(`The file ${fileString} already exists, do you want to overwrite it?`)
+            const overwriteFile = readlineSync.keyInYNStrict(`The file ${fileString} already exists, do you want to overwrite it?`);
             switch (overwriteFile) {
                 // We should overwrite the file, so delete it.
                 case true:
@@ -781,20 +781,20 @@ class Cryptography {
                     if (createIDFile || mode === "encrypt") {
                         if (fs.existsSync(file + '.🦈🔑🪪')) {
                             // Key file already exists, but we've been given permission to overwrite. So delete the key file.
-                            fs.unlinkSync(file + '.🦈🔑🪪')
+                            fs.unlinkSync(file + '.🦈🔑🪪');
                         }
                     }
-                    return true
+                    return true;
                 case false:
                     // Unable to proceed, as we can't overwrite the files.
                     // 🦈--> maybe use console.log() to show the message, and then use process.exit(1) instead of throwing an error.
                     throw new Error("You chose not to overwrite the file, please rename or move the file yourself, and then try again.");
                 default:
-                    throw new Error("When asked for permission to overwrite, the user input was invalid.")
+                    throw new Error("When asked for permission to overwrite, the user input was invalid.");
             }
         }
         // File(s) dosn't exist, so we can just return true
-        return true
+        return true;
     }
 
     /**
@@ -817,44 +817,44 @@ class Cryptography {
                 doCopy = false,
                 userkey = "cHaNgE-mE"
         } = options;
-        let encrypted = Cryptography.encryptData(data, key, isString, features)
-            // 🦈--> Add return statements with objects
+        let encrypted = Cryptography.encryptData(data, key, isString, features);
+        // 🦈--> Add return statements with objects
         try {
             switch (isString) {
                 case true: // Return the encrypted string
                     if (doCopy) {
                         // Copy the encrypted string into the clipboard
-                        clipboard.writeSync(encrypted)
+                        clipboard.writeSync(encrypted);
                     }
-                    return encrypted
+                    return encrypted;
                 case false: // Save file
                     // Check if files exist, if they do - ask for permission to overwrite
                     if (Cryptography.prepareSave(data, "encrypt", createIDFile)) {
                         // We are ready to save
-                        fs.writeFileSync(data + '.🦈🔑', `${encrypted}`, "utf8")
+                        fs.writeFileSync(data + '.🦈🔑', `${encrypted}`, "utf8");
                         if (doCopy) {
-                            clipboard.writeSync(`${encrypted}`)
+                            clipboard.writeSync(`${encrypted}`);
                         }
                         if (createIDFile) {
-                            fs.writeFileSync(data + '.🦈🔑🪪', Cryptography.object.encryptObject(idObjectFile, userkey), "utf8")
+                            fs.writeFileSync(data + '.🦈🔑🪪', Cryptography.object.encryptObject(idObjectFile, userkey), "utf8");
                         }
-                    } else { throw new Error("Enexpected return value from prepareSave() in the encryption flow") }
+                    } else { throw new Error("Enexpected return value from prepareSave() in the encryption flow"); }
                     break;
                 default:
-                    throw new Error("Value isString was neither true or false")
+                    throw new Error("Value isString was neither true or false");
             }
 
             // if we need to delete the original file
             if (deleteOriginal) {
-                fs.unlinkSync(data)
+                fs.unlinkSync(data);
             }
 
             // we return wether the file exists so we only return true if the file has been created
-            return fs.existsSync(data + '.🦈🔑')
+            return fs.existsSync(data + '.🦈🔑');
         } catch (err) {
             // 🦈--> maybe use console.log() to show the message, and then use process.exit(1) instead of throwing an error.
-            console.log("There was an error writing the file(s), or outputting the string")
-            throw new Error(err)
+            console.log("There was an error writing the file(s), or outputting the string");
+            throw new Error(err);
         }
     }
 
@@ -872,51 +872,51 @@ class Cryptography {
             // set dataToDecrypt to the correct data, and decode it from Base64
             switch (isString) {
                 case true:
-                    dataToDecrypt = Buffer.from(data, "base64").toString("utf8")
+                    dataToDecrypt = Buffer.from(data, "base64").toString("utf8");
                     break;
                 case false:
-                    dataToDecrypt = Buffer.from(fs.readFileSync(data, "utf8"), "base64").toString("utf8")
+                    dataToDecrypt = Buffer.from(fs.readFileSync(data, "utf8"), "base64").toString("utf8");
                     break;
                 default:
-                    console.log("decryptData() - Parameter - isString:", isString)
-                    throw new Error("Required parameter <isString> in decryptData() was undefined, or set incorrectly.")
+                    console.log("decryptData() - Parameter - isString:", isString);
+                    throw new Error("Required parameter <isString> in decryptData() was undefined, or set incorrectly.");
             }
 
             // Get the json object from the file
-            let jsonData = Cryptography.object.readFileObject(dataToDecrypt)
+            let jsonData = Cryptography.object.readFileObject(dataToDecrypt);
 
             // Calculate the hashed key
-            let hashKey = Cryptography.calculateKey(key, jsonData.features, false)
+            let hashKey = Cryptography.calculateKey(key, jsonData.features, false);
 
             // Check if the file is secured with TOTP
             // 🦈--> Gotta think of a better way of implementing this, as of right now - anyone with the source code, JS knowlege, and time can bypass it.
             if (jsonData.TOTP) {
                 // TOTP is enabled, Ask the user for their auth code, and validate it
                 // base32 encode
-                let b32key = base32.encode(hashKey).toString().replace(/=/g, "")
-                let otp = new Cryptography.totp(b32key) // create otp
+                let b32key = base32.encode(hashKey).toString().replace(/=/g, "");
+                let otp = new Cryptography.totp(b32key); // create otp
 
                 // Ask the user for their TOTP code
-                let userotp = readlineSync.questionInt("Enter the code found in your authenticator app ")
+                let userotp = readlineSync.questionInt("Enter the code found in your authenticator app ");
 
                 // Check if user input is correct, if not - stop and throw error
                 if (!otp.verify(userotp.toString())) {
-                    throw new Error("Incorrect TOTP!")
+                    throw new Error("Incorrect TOTP!");
                 } // Continue and allow decryption
             }
 
             // Decrypt the data
-            let cipherSplit = jsonData.raw.split("$$")
-            let text = cipherSplit[0]
-            let tag = Buffer.from(cipherSplit[1], 'hex')
-            let iv = Buffer.from(cipherSplit[2], 'hex')
+            let cipherSplit = jsonData.raw.split("$$");
+            let text = cipherSplit[0];
+            let tag = Buffer.from(cipherSplit[1], 'hex');
+            let iv = Buffer.from(cipherSplit[2], 'hex');
             const decipher = crypto.createDecipheriv('aes-256-gcm', Cryptography.hash.fish64(hashKey, "utf8", false), iv);
             decipher.setAuthTag(tag);
             let decryptedData = decipher.update(text, 'hex', 'utf8');
             decryptedData += decipher.final('utf8');
             return decryptedData; // Return the decrypted data
         } catch (err) { // 99% chance of it being cased by using the incorrect password, but log to console just in case.
-            throw new Error("An error occured while decrypting! - Have you entered the right password?")
+            throw new Error("An error occured while decrypting! - Have you entered the right password?");
         }
     }
 
@@ -930,49 +930,49 @@ class Cryptography {
      */
     static decrypt(key, file, deleteOriginal = false, isString = false, doCopy = false) {
         // Decrypt the file / string
-        let originalText = Cryptography.decryptData(key, file, isString) // We declare it here first so we can use it in the low later.
+        let originalText = Cryptography.decryptData(key, file, isString); // We declare it here first so we can use it in the low later.
 
         switch (isString) {
             case true:
                 if (doCopy) {
-                    clipboard.writeSync(originalText)
+                    clipboard.writeSync(originalText);
                 }
-                return originalText
+                return originalText;
             case false:
                 // Check if file exists, if it does - ask for permission to overwrite
                 if (Cryptography.prepareSave(file, "decrypt")) {
                     // We are ready to save
-                    fs.writeFileSync(file.replace('.🦈🔑', ''), originalText)
+                    fs.writeFileSync(file.replace('.🦈🔑', ''), originalText);
 
                     // Copy to clipboard
                     if (doCopy) {
-                        clipboard.writeSync(originalText)
+                        clipboard.writeSync(originalText);
                     }
 
-                } else { throw new Error("Enexpected return value from prepareSave() in the decrypt flow") }
+                } else { throw new Error("Enexpected return value from prepareSave() in the decrypt flow"); }
                 break;
             default:
-                throw new Error("Required parameter isString was neither true or false")
+                throw new Error("Required parameter isString was neither true or false");
         }
         // Delete original file (making sure isString is false, as if it was true, there would be no original file to delete.)
         try {
             if (deleteOriginal && !isString) {
                 // It dosnt matter if the file exists, as then we wouldn't need to delete it, it's just here to avoid an exception.
                 if (fs.existsSync(file)) {
-                    fs.unlinkSync(file)
+                    fs.unlinkSync(file);
                 }
             }
         } catch (err) {
             // something went wrong, most likely permissions, or file being locked (Used by another process). It's not fatal, so we don't need to throw an error or stop the program.
-            console.error("Error deleting original file")
+            console.error("Error deleting original file");
         }
 
         // we return wether the file exists so we only return true if the file has been created
-        return fs.existsSync(file.replace('.🦈🔑', ''))
+        return fs.existsSync(file.replace('.🦈🔑', ''));
     }
 
     // Declare TOTP (from totp.js) here so we can use it everywhere
-    static totp = TOTP
+    static totp = TOTP;
 
     /**
      * Function to get info from an ID file
@@ -984,20 +984,20 @@ class Cryptography {
     static checkid(file, key, doCopy = false) {
         if (fs.existsSync(file)) {
             let id;
-            let fileData = fs.readFileSync(file, 'utf8')
+            let fileData = fs.readFileSync(file, 'utf8');
             try { // Try to decrypt
-                id = Cryptography.object.decryptObject(key, fileData)
+                id = Cryptography.object.decryptObject(key, fileData);
             } catch (err) { // 99% chance of it being cased by using the incorrect password, but log to console just in case.
-                console.log(err)
-                throw new Error("An error occured while trying to decrypt the file info! - Have you entered the right password?")
+                console.log(err);
+                throw new Error("An error occured while trying to decrypt the file info! - Have you entered the right password?");
             }
             if (doCopy) {
                 // Stringify the id object and copy it to the clipboard
-                clipboard.writeSync(JSON.stringify(id, null, 2))
+                clipboard.writeSync(JSON.stringify(id, null, 2));
             }
-            return id // Return the id object
+            return id; // Return the id object
         } else // 🦈--> This is not serious enough to stop the program, so write an exception handler on the other end.
-        { throw new Error("File does not exist.") }
+        { throw new Error("File does not exist."); }
     }
 }
-export default Cryptography
+export default Cryptography;

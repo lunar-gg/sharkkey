@@ -50,8 +50,9 @@ program // Set basic info
     .option('--totp',
         "Require TOTP authentacation before decrypting")
     .action((file, pass, options) => {
-        let [features, values] = handleOpts(options)
-        options = values
+        let aaa = handleOpts(options)
+        let features = aaa[0]
+        options = aaa[1]
 
         // Get the hashed key
         const hashKey = shark.cryptography.calculateKey(
@@ -153,8 +154,8 @@ program // Set basic info
         "Copy the decrypted file or string to the clipboard after decryption")
     .action((file, pass, idfile, options) => {
         // Handle the decrypt command
-        let values = handleOpts(options)[1]
-        options = values
+        let aaa = handleOpts(options)
+        options = aaa[1]
 
         // Define the different output strings
         let infoStr = `✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨
@@ -232,8 +233,8 @@ program // Set basic info
         "Copy the id info to the clipboard (JSON)")
     .action((file, password, options) => {
         // Handle checkid command
-        let values = handleOpts(options)[1]
-        options = values
+        let aaa = handleOpts(options)
+        options = aaa[1]
             // Get info from the file
         let idInfo;
         try {
@@ -275,5 +276,5 @@ function handleOpts(opts) {
         features.push(opt);
     }
     if (features.length === 0) { features.push("None, this means anyone with the password can decrypt.") }
-    return [features, values]
+    return [...[features], values]
 }

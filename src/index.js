@@ -49,7 +49,7 @@ program // Set basic info
         "Include the name of the file being encrypted as part of the encryption process")
     .option('--totp',
         "Require TOTP authentacation before decrypting")
-    .action(async(file, pass, options) => {
+    .action((file, pass, options) => {
         // Handle the encrypt command
         let features = []; // Define features so we can use it here
 
@@ -113,11 +113,13 @@ program // Set basic info
                 features,
                 options.createID,
                 options.string,
-                options.copy
+                options.copy,
+                pass
             )
 
             // Define variables here so we can use them in the switch statement
             let outputStr, outputMessage;
+            if (typeof options.string === "undefined") { options.string = false }
 
             // Handle how (and what) output to the user
             switch (options.string) {
@@ -139,7 +141,7 @@ program // Set basic info
                     break;
 
                 default: // Recieved unexpected input, Throw error.
-                    throw new Error("Value of options.string was unexpected")
+                    throw new Error("Value of options.string was unexpected: " + options.string)
             } // Show the output
             console.log(outputMessage)
         } catch (error) {
@@ -165,7 +167,7 @@ program // Set basic info
         "Encrypt a string instead of a file")
     .option('-c, --copy',
         "Copy the decrypted file or string to the clipboard after decryption")
-    .action(async(file, pass, idfile, options) => {
+    .action((file, pass, idfile, options) => {
         // Handle the decrypt command
 
         // Define the different output strings
@@ -186,17 +188,22 @@ program // Set basic info
             // 🦈--> Implement logic
             throw new Error("Not implemented")
         } else { // Dont use ID to decrypt file
-            let originalText = await shark.cryptography.decrypt(
-                pass,
-                file,
-                options.deleteOriginal,
-                options.string,
-                options.copy
-            )
-
+            let originalText;
+            try {
+                originalText = shark.cryptography.decrypt(
+                    pass,
+                    file,
+                    options.deleteOriginal,
+                    options.string,
+                    options.copy
+                )
+            } catch (err) {
+                console.log("[🦈🔑] We were unable to decrypt the data with the info you provided.")
+                process.exit(1)
+            }
             // Define variables here so we can use them in the switch statement
             let outputStr, outputMessage;
-
+            if (typeof options.string === "undefined") { options.string = false }
             switch (options.string) {
                 case true:
                     { // We decrypted a string, so show info relavant to that
@@ -238,11 +245,17 @@ program // Set basic info
     .argument('<pass>', "Password")
     .option('-c, --copy',
         "Copy the id info to the clipboard (JSON)")
-    .action(async(file, password, options) => {
+    .action((file, password, options) => {
         // Handle checkid command
 
         // Get info from the file
-        let idInfo = shark.cryptography.checkid(file, password, options.copy || false)
+        let idInfo;
+        try {
+            idInfo = shark.cryptography.checkid(file, password, options.copy || false)
+        } catch (err) { // Show "error" to user
+            console.log("[🦈🔑] We were unable to decrypt the ID file using the info you provided.")
+            process.exit(1) // End with failure code
+        }
 
         // Output template
         let infoStr = `✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨
@@ -255,7 +268,7 @@ program // Set basic info
         🦈🔑
         ✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨`
 
-        let outputStr = infoStr.replace(new RegExp(/(?!\\n) +/g), "") // outputStr if options.copy if false
+        let outputStr = infoStr.replace(new RegExp(/ {8}/g), "") // outputStr if options.copy if false
 
         // If options.copy is true, apply the replace() function, if not just use outputStr as is
         let outputMessage = options.copy ? outputStr.replace("🦈🔑\n", "The raw JSON data has been copied to your clipboard.\n\n🦈🔑\n") : outputStr

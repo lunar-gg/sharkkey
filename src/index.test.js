@@ -24,7 +24,7 @@ describe("files", () => {
                 "jestPass", [],
                 true,
                 "jestFileId.txt")
-            expect(shark.cryptography.encrypt(hk, "./jestFileId.txt", true, [], true, false, false))
+            expect(shark.cryptography.encrypt(hk, "./jestFileId.txt", true, [], true, false, false, "jestPass"))
                 .toBe(true)
         })
         /* 🦈--> fix this- it works everywhere else than Github Actions lmao
@@ -37,6 +37,10 @@ describe("files", () => {
             expect(shark.cryptography.encrypt(hk, "./jestFileTOTP.txt", true, ["totp"], false, false, false))
                 .toBe(true)
         })*/
+    test("checkid file", () => {
+        expect(shark.cryptography.checkid("jestFileId.txt.🦈🔑🪪", "jestPass"))
+            .toHaveProperty('id', { '0': '992469a97b348ca4', '1': '502c4b8f4ae94915' })
+    })
     test("decrypt file", () => {
         expect(shark.cryptography.decrypt("jestPass", "./jestFile.txt.🦈🔑", true, false, false))
             .toBe(true)
@@ -51,12 +55,12 @@ describe("strings", () => {
     test("encrypt string", () => {
         expect(shark.cryptography.encrypt(hashKey, "hello", false, [], false, true, false))
             .toBe(
-                "ODRmNWRmZGZkZmRmZGQ4ZDllODhkZGM1ZGZkZGE2OTJiMmNiYTViYjkzOTRiMTk1OTc5N2IxOTJhOTk0YTZhYmI2Y2RiMmE4YTY4N2IxYjhhZDk3YjE5MmFhY2FhNWFiOThjYmIyODVhOTk0YTU5NWJlYzJkZGQzZjVkZmRmZGZkZmRkOTk5NjkzOWFkZGM1ZGZkZGI3OTY5YjliOWE5MWRkZDNmNWRmZGZkZmRmZGQ5OTlhOWU4YjhhOGQ5YThjZGRjNWRmYTRhMmQzZjVkZmRmZGZkZmRkYWJiMGFiYWZkZGM1ZGY5OTllOTM4YzlhZjU4Mg=="
+                "ODRmNWRmZGZkZmRmZGQ4ZDllODhkZGM1ZGZkZGNhYzg5ZTllY2FjODk5Y2U5Y2NjZGJkYmNmY2Y5ZWM5OWNjOWM3Y2VjOWNhYzc5YmM4Y2Q5ZGM2OWNjYTlhY2NjZmNjY2JjNmNiYzg5YWM2OWJjYTliY2JkYmRiY2NjZGM5Y2NjY2M2Y2NjYWM5Y2FjOWNhYzljZGNjYzljY2NkYzljYWM5Y2RjOWNkYzljZWNjYzZjOWNlY2NjZmRkZDNmNWRmZGZkZmRmZGQ5OTk2OTM5YWRkYzVkZmRkYjc5NjliOWI5YTkxZGRkM2Y1ZGZkZmRmZGZkZDk5OWE5ZThiOGE4ZDlhOGNkZGM1ZGZhNGEyZDNmNWRmZGZkZmRmZGRhYmIwYWJhZmRkYzVkZjk5OWU5MzhjOWFmNTgy"
             )
     })
     test("decrypt string", () => {
         expect(shark.cryptography.decrypt("jestPass",
-            "ODRmNWRmZGZkZmRmZGQ4ZDllODhkZGM1ZGZkZGE2OTJiMmNiYTViYjkzOTRiMTk1OTc5N2IxOTJhOTk0YTZhYmI2Y2RiMmE4YTY4N2IxYjhhZDk3YjE5MmFhY2FhNWFiOThjYmIyODVhOTk0YTU5NWJlYzJkZGQzZjVkZmRmZGZkZmRkOTk5NjkzOWFkZGM1ZGZkZGI3OTY5YjliOWE5MWRkZDNmNWRmZGZkZmRmZGQ5OTlhOWU4YjhhOGQ5YThjZGRjNWRmYTRhMmQzZjVkZmRmZGZkZmRkYWJiMGFiYWZkZGM1ZGY5OTllOTM4YzlhZjU4Mg==", false, true, false)).toBe("hello")
+            "ODRmNWRmZGZkZmRmZGQ4ZDllODhkZGM1ZGZkZGNhYzg5ZTllY2FjODk5Y2U5Y2NjZGJkYmNmY2Y5ZWM5OWNjOWM3Y2VjOWNhYzc5YmM4Y2Q5ZGM2OWNjYTlhY2NjZmNjY2JjNmNiYzg5YWM2OWJjYTliY2JkYmRiY2NjZGM5Y2NjY2M2Y2NjYWM5Y2FjOWNhYzljZGNjYzljY2NkYzljYWM5Y2RjOWNkYzljZWNjYzZjOWNlY2NjZmRkZDNmNWRmZGZkZmRmZGQ5OTk2OTM5YWRkYzVkZmRkYjc5NjliOWI5YTkxZGRkM2Y1ZGZkZmRmZGZkZDk5OWE5ZThiOGE4ZDlhOGNkZGM1ZGZhNGEyZDNmNWRmZGZkZmRmZGRhYmIwYWJhZmRkYzVkZjk5OWU5MzhjOWFmNTgy", false, true, false)).toBe("hello")
     })
 
 })
@@ -75,7 +79,7 @@ describe("generic", () => {
         expect(shark.art())
             .toContain(`@********..........(..(...***,...******@@@@@@@@@@@@@@@@@@@**********************`)
     })
-    test("vlog", () => {
+    test("verboseLog", () => {
         expect(shark.vlog("hello world"))
             .toBe(undefined)
     })

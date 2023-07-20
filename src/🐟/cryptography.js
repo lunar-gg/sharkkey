@@ -530,7 +530,7 @@ class Cryptography {
         /**
          * Encrypts the given object with the given passphrase
          * @param {object} obj
-         * @param {string} passphrase
+         * @param {string} passphrase User chosen password
          * @returns {string} Encrypted and obfuscated string
          */
         static encryptObject(obj, passphrase) {
@@ -539,44 +539,47 @@ class Cryptography {
             // Parses the given passphrase into a pbkdf2 (sha512) hash
             const parsedKey = Cryptography.getKeyFromPassphrase(passphrase)
 
-            // Declare the variables we're going to use for the encryption
-            const key = Buffer.from(parsedKey, 'hex'); // Convert the parsedKey to a Buffer
-            const iv = Buffer.alloc(16); // 🦈--> Be less stupid
-
             // Create the cipher and encrypt the data
-            const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
-            let encryptedString = cipher.update(jsonString, 'utf8', 'hex');
-            encryptedString += cipher.final("hex");
-
+            const iv = Buffer.from(Cryptography.hash.fish64(parsedKey, "utf8", true), 'utf8');
+            const cipher = crypto.createCipheriv('aes-256-gcm', Cryptography.hash.fish64(parsedKey, "utf8", false), iv);
+            let enc = cipher.update(jsonString, 'utf8', 'hex'),
+                tag;
+            enc += cipher.final('hex')
+            tag = cipher.getAuthTag()
+            let rawEncrypted = enc + "$$" + tag.toString('hex') + "$$" + iv.toString('hex');
             // Obfuscate the encrypted string
-            encryptedString = Cryptography.hex.obfuscateHexString(encryptedString);
+            let encryptedString = Cryptography.hex.obfuscateHexString(rawEncrypted);
             return encryptedString; // Return the obfuscated string
         }
 
         /**
          * Decrypts the given string into a object using the given passphrase
-         * @param {string} passphrase
+         * @param {string} passphrase User chosen password
          * @param {string} data Encrypted and obfuscated object
          * @returns {object} Decrypted and deobfuscated object
          */
         static decryptObject(passphrase, data) {
             // Parse provided passphrase
             const parsedKey = Cryptography.getKeyFromPassphrase(passphrase);
+
             // Define encryptedString as the input parameter id, and unobfuscate it
             let encryptedString = data;
             encryptedString = Cryptography.hex.unobfuscateHexString(encryptedString);
 
-            // Define the variables we're going to use for the decryption
-            const key = Buffer.from(parsedKey, 'hex'); // Convert the parsedKey to a Buffer
-            const iv = Buffer.alloc(16); // For AES-256, initialize an empty 16-byte Buffer
+            // Create the decipher
+            let cipherSplit = encryptedString.split("$$")
+            let text = cipherSplit[0]
+            let tag = Buffer.from(cipherSplit[1], 'hex')
+            let iv = Buffer.from(cipherSplit[2], 'hex')
+            const decipher = crypto.createDecipheriv('aes-256-gcm', Cryptography.hash.fish64(parsedKey, "utf8", false), iv);
 
-            // Create the decipher, and decrypt the data
-            const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
-            let decryptedString = decipher.update(encryptedString, 'hex', 'utf8');
-            decryptedString += decipher.final('utf8');
+            // Decrypt the data
+            decipher.setAuthTag(tag);
+            let decryptedData = decipher.update(text, 'hex', 'utf8');
+            decryptedData += decipher.final('utf8');
 
             // Parse the object and return it
-            const IDObject = JSON.parse(decryptedString);
+            const IDObject = JSON.parse(decryptedData);
             return IDObject;
         }
 
@@ -708,7 +711,7 @@ class Cryptography {
         switch (isString) {
             // If we want to encrypt a string
             case true:
-                dataToEncrypt = Buffer.from(data, "utf8").toString("utf8")
+                dataToEncrypt = data
                 break;
                 // If we want to encrypt a file
             case false:
@@ -722,11 +725,13 @@ class Cryptography {
         let encrypted;
         // Basic error checking in encrypt flow
         try {
-            // file deepcode ignore InsecureCipherNoIntegrity: Implementing later
-            let buff = crypto.createCipheriv('aes-256-cbc', Cryptography.hash.fish64(key, "utf8", false), Cryptography.hash.fish64(key, "utf8", true))
-            rawEncrypted = Buffer.from(
-                    buff.update(dataToEncrypt, 'utf8', 'hex') + buff.final('hex')
-                ).toString('base64') // Encrypts data and converts to hex and base64
+            const iv = Buffer.from(Cryptography.hash.fish64(key, "utf8", true), 'utf8');
+            const cipher = crypto.createCipheriv('aes-256-gcm', Cryptography.hash.fish64(key, "utf8", false), iv);
+            let enc = cipher.update(dataToEncrypt, 'utf8', 'hex'),
+                tag;
+            enc += cipher.final('hex')
+            tag = cipher.getAuthTag()
+            rawEncrypted = enc + "$$" + tag.toString('hex') + "$$" + iv.toString('hex');
             encrypted = Cryptography.object.writeFileObject(rawEncrypted, key, features, isString ? "string" : data)
             return Buffer.from(encrypted, "utf8").toString("base64") // encrypts to base64
         } catch (err) {
@@ -805,7 +810,7 @@ class Cryptography {
      */
     // 🦈--> Add return statements with objects
     // 🦈--> switch to AES-256-GCM
-    static encrypt(key, data, deleteOriginal = false, features = [], createIDFile = false, isString = false, doCopy = false) {
+    static encrypt(key, data, deleteOriginal = false, features = [], createIDFile = false, isString = false, doCopy = false, userkey = "cHaNgE-mE") {
         let encrypted = Cryptography.encryptData(data, key, isString, features)
         try {
             switch (isString) {
@@ -824,7 +829,7 @@ class Cryptography {
                             clipboard.writeSync(`${encrypted}`)
                         }
                         if (createIDFile) {
-                            fs.writeFileSync(data + '.🦈🔑🪪', Cryptography.object.encryptObject(idObjectFile, key), "utf8")
+                            fs.writeFileSync(data + '.🦈🔑🪪', Cryptography.object.encryptObject(idObjectFile, userkey), "utf8")
                         }
                     } else { throw new Error("Enexpected return value from prepareSave() in the encryption flow") }
                     break;
@@ -892,20 +897,18 @@ class Cryptography {
                     throw new Error("Incorrect TOTP!")
                 } // Continue and allow decryption
             }
-            // Decrypt the data
-            const buff = Buffer.from(jsonData.raw, 'base64')
-            const decipher = crypto.createDecipheriv('aes-256-cbc',
-                Cryptography.hash.fish64(hashKey, "utf8", false),
-                Cryptography.hash.fish64(hashKey, "utf8", true))
-            let decryptedData = decipher.update(
-                    buff.toString('utf8'),
-                    'hex',
-                    'utf8') +
-                decipher.final('utf8');
 
-            return decryptedData // Return the decrypted data
+            // Decrypt the data
+            let cipherSplit = jsonData.raw.split("$$")
+            let text = cipherSplit[0]
+            let tag = Buffer.from(cipherSplit[1], 'hex')
+            let iv = Buffer.from(cipherSplit[2], 'hex')
+            const decipher = crypto.createDecipheriv('aes-256-gcm', Cryptography.hash.fish64(hashKey, "utf8", false), iv);
+            decipher.setAuthTag(tag);
+            let decryptedData = decipher.update(text, 'hex', 'utf8');
+            decryptedData += decipher.final('utf8');
+            return decryptedData; // Return the decrypted data
         } catch (err) { // 99% chance of it being cased by using the incorrect password, but log to console just in case.
-            console.log(err)
             throw new Error("An error occured while decrypting! - Have you entered the right password?")
         }
     }

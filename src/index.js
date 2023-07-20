@@ -274,6 +274,6 @@ function handleOpts(opts) {
         }
         features.push(opt);
     }
-    features = features.length > 0 ? features : ["None, this means anyone with the password can decrypt."]
+    if (features.length === 0) { features.push("None, this means anyone with the password can decrypt.") }
     return [features, values]
 }

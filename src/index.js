@@ -50,29 +50,14 @@ program // Set basic info
     .option('--totp',
         "Require TOTP authentacation before decrypting")
     .action((file, pass, options) => {
-        // Handle the encrypt command
-        let features = []; // Define features so we can use it here
-
-        /* Loop through every item in options{},
-        Put everything except deleteOriginal, createID, and string
-        in the features array */
-        for (const opt in options) {
-            if (["deleteOriginal", "createID", "string"].includes(opt)) {
-                continue;
-            }
-            features.push(opt);
-        }
-
-        // If theres no items in features[], add a info string to it
-        if (features.length === 0) {
-            features.push("None, this means anyone with the password can decrypt.");
-        }
+        var [features, values] = handleOpts(options)
+        options = values
 
         // Get the hashed key
         const hashKey = shark.cryptography.calculateKey(
             pass,
             features,
-            options.createID || false,
+            options.createID,
             file)
 
         try {
@@ -83,9 +68,8 @@ program // Set basic info
             Filename: ${file}
             Key: ${hashKey}
             Features: ${features}
-            Deleted Original: ${options.deleteOriginal || false}
-            Created ID: ${options.createID || false}
-            TOTP: ${options.totp || false}
+            Deleted Original: ${options.deleteOriginal}
+            Created ID: ${options.createID}
             Remember never to share the Key with anyone,
             as they would be able to decrypt your file with it.
             
@@ -111,16 +95,15 @@ program // Set basic info
                 file,
                 options.deleteOriginal, {
                     features: features || [],
-                    createIDFile: options.createID || false,
-                    isString: options.string || false,
-                    doCopy: options.copy || false,
+                    createIDFile: options.createID,
+                    isString: options.string,
+                    doCopy: options.copy,
                     userkey: pass || "cHaNgE-mE"
                 }
             )
 
             // Define variables here so we can use them in the switch statement
             let outputStr, outputMessage;
-            if (typeof options.string === "undefined") { options.string = false }
 
             // Handle how (and what) output to the user
             switch (options.string) {
@@ -170,6 +153,8 @@ program // Set basic info
         "Copy the decrypted file or string to the clipboard after decryption")
     .action((file, pass, idfile, options) => {
         // Handle the decrypt command
+        var values = handleOpts(options)[1]
+        options = values
 
         // Define the different output strings
         let infoStr = `✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨
@@ -204,7 +189,6 @@ program // Set basic info
             }
             // Define variables here so we can use them in the switch statement
             let outputStr, outputMessage;
-            if (typeof options.string === "undefined") { options.string = false }
             switch (options.string) {
                 case true:
                     { // We decrypted a string, so show info relavant to that
@@ -248,11 +232,12 @@ program // Set basic info
         "Copy the id info to the clipboard (JSON)")
     .action((file, password, options) => {
         // Handle checkid command
-
-        // Get info from the file
+        var values = handleOpts(options)[1]
+        options = values
+            // Get info from the file
         let idInfo;
         try {
-            idInfo = shark.cryptography.checkid(file, password, options.copy || false)
+            idInfo = shark.cryptography.checkid(file, password, options.copy)
         } catch (err) { // Show "error" to user
             console.log("[🦈🔑] We were unable to decrypt the ID file using the info you provided.")
             process.exit(1) // End with failure code
@@ -278,3 +263,17 @@ program // Set basic info
         console.log(outputMessage)
     });
 program.parse(process.argv);
+
+function handleOpts(opts) {
+    let features = [];
+    let values = { deleteOriginal: false, createID: false, string: false, copy: false, useID: false, verbose: false };
+    for (const opt in opts) {
+        if (["deleteOriginal", "createID", "string", "copy", "useID", "verbose"].includes(opt)) {
+            values[opt] = true
+            continue;
+        }
+        features.push(opt);
+    }
+    features = features.length > 0 ? features : ["None, this means anyone with the password can decrypt."]
+    return [features, values]
+}

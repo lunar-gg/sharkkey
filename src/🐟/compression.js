@@ -1,6 +1,6 @@
 // Native imports
-import { brotliCompressSync, brotliDecompressSync } from 'node:zlib'
-import { Buffer } from 'buffer'
+import { brotliCompressSync, brotliDecompressSync } from 'node:zlib';
+import { Buffer } from 'buffer';
 /**
  * Class that contains functions to compress and decompress data with brotli
  */
@@ -11,7 +11,7 @@ class Compression {
      * @returns {string} Base64 Encoded
      */
     static compressString(str) {
-        return brotliCompressSync(str).toString("base64")
+        return brotliCompressSync(str).toString("base64");
     }
 
     /**
@@ -20,7 +20,7 @@ class Compression {
      * @returns {string} Decompressed string
      */
     static decompressString(str) {
-        return brotliDecompressSync(Buffer.from(str, "base64")).toString()
+        return brotliDecompressSync(Buffer.from(str, "base64")).toString();
     }
 }
-export default Compression
+export default Compression;

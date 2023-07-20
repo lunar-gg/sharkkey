@@ -1,10 +1,10 @@
 import shark from "./🦈.js";
-import fs from 'fs'
-import { describe, beforeEach, it, expect } from '@jest/globals'
+import fs from 'fs';
+import { describe, beforeEach, it, expect } from '@jest/globals';
 describe('shark', () => {
     let instance;
     beforeEach(() => {
-        instance = shark
+        instance = shark;
     });
     it('bind shark to instance', () => { //??
         expect(instance === shark).toBeTruthy();
@@ -14,20 +14,20 @@ describe('shark', () => {
         expect(shark.compression).toBeDefined();
         expect(shark.vlog).toBeDefined();
         expect(shark.art).toBeDefined();
-    })
+    });
     describe("Check environment", () => {
         it("cleanup", () => {
             let trash = [];
-            let files = fs.readdirSync("./")
-            if (files.includes("🦈🔑")) { console.log("Cache has not yet been cleared") } else {
-                console.log("Old files that could've been used by sharkkey are not pressent 👍")
+            let files = fs.readdirSync("./");
+            if (files.includes("🦈🔑")) { console.log("Cache has not yet been cleared"); } else {
+                console.log("Old files that could've been used by sharkkey are not pressent 👍");
             }
             for (const file in files) {
-                if (file.includes("🦈🔑")) trash.push(file)
+                if (file.includes("🦈🔑")) trash.push(file);
             }
             for (const file in trash) {
-                fs.unlinkSync(file)
+                fs.unlinkSync(file);
             }
-        })
-    })
+        });
+    });
 });

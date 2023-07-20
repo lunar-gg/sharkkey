@@ -7,4 +7,4 @@ export default {
     //   roots: ['src'],
     resetMocks: true,
     testEnvironment: 'node',
-}
+};

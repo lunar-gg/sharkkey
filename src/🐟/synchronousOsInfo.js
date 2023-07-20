@@ -1,6 +1,6 @@
-import os from 'os'
-import { execSync } from 'child_process'
-import process from 'process'
+import os from 'os';
+import { execSync } from 'child_process';
+import process from 'process';
 /* 
 Code in this file was blatantly stolen from https://github.com/sebhildebrandt/systeminformation
 as i needed a quick and dirty synchronous way to get OS information.
@@ -77,13 +77,13 @@ function osInfo() {
     };
     switch (true) {
         case _linux:
-            return handleLinux(result)
+            return handleLinux(result);
         case _windows:
-            return handleWin(result)
+            return handleWin(result);
         case _darwin:
-            return handleDarwin(result)
+            return handleDarwin(result);
         default:
-            throw new Error("Unsupported OS!")
+            throw new Error("Unsupported OS!");
     }
 }
 
@@ -102,18 +102,18 @@ function handleLinux(result) {
     result.distro = (release.DISTRIB_ID || release.NAME || 'unknown').replace(/"/g, '');
     result.release = (releaseVersion || release.DISTRIB_RELEASE || release.VERSION_ID || 'unknown').replace(/"/g, '');
     result.build = (release.BUILD_ID || '').replace(/"/g, '').trim();
-    result.codename = "Linux"
-    return result
+    result.codename = "Linux";
+    return result;
 }
 
 function handleWin(result) {
-    let string = execSync('powershell -command "Get-CimInstance Win32_OperatingSystem | select Caption,SerialNumber,BuildNumber,ServicePackMajorVersion,ServicePackMinorVersion | fl"')
-    let lines = string.toString().split('\r\n')
+    let string = execSync('powershell -command "Get-CimInstance Win32_OperatingSystem | select Caption,SerialNumber,BuildNumber,ServicePackMajorVersion,ServicePackMinorVersion | fl"');
+    let lines = string.toString().split('\r\n');
     result.distro = Util.getValue(lines, 'Caption', ':').trim();
     result.serial = Util.getValue(lines, 'SerialNumber', ':').trim();
     result.build = Util.getValue(lines, 'BuildNumber', ':').trim();
-    result.codename = "Microsoft Windows"
-    return result
+    result.codename = "Microsoft Windows";
+    return result;
 }
 
 function handleDarwin(result) {
@@ -123,6 +123,6 @@ function handleDarwin(result) {
     result.release = (Util.getValue(lines, 'ProductVersion', ':', true, true) + ' ' + Util.getValue(lines, 'ProductVersionExtra', ':', true, true)).trim();
     result.build = Util.getValue(lines, 'BuildVersion');
     result.codename = 'macOS';
-    return result
+    return result;
 }
-export default osInfo
+export default osInfo;

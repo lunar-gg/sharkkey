@@ -68,7 +68,7 @@ program // Set basic info
             let infoStrFile = `✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨
             Filename: ${file}
             Key: ${hashKey}
-            Features: ${features}
+            Features: ${features.toString()}
             Deleted Original: ${options.deleteOriginal}
             Created ID: ${options.createID}
             Remember never to share the Key with anyone,
@@ -82,7 +82,7 @@ program // Set basic info
             let infoStr = `✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨
             Encrypted string: __string__
             Key: ${hashKey}
-            Features: ${features}
+            Features: ${features.toString()}
 
             Remember never to share the Key with anyone,
             as they would be able to decrypt your file with it.

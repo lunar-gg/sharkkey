@@ -50,7 +50,7 @@ program // Set basic info
     .option('--totp',
         "Require TOTP authentacation before decrypting")
     .action((file, pass, options) => {
-        var [features, values] = handleOpts(options)
+        let [features, values] = handleOpts(options)
         options = values
 
         // Get the hashed key
@@ -153,7 +153,7 @@ program // Set basic info
         "Copy the decrypted file or string to the clipboard after decryption")
     .action((file, pass, idfile, options) => {
         // Handle the decrypt command
-        var values = handleOpts(options)[1]
+        let values = handleOpts(options)[1]
         options = values
 
         // Define the different output strings
@@ -232,7 +232,7 @@ program // Set basic info
         "Copy the id info to the clipboard (JSON)")
     .action((file, password, options) => {
         // Handle checkid command
-        var values = handleOpts(options)[1]
+        let values = handleOpts(options)[1]
         options = values
             // Get info from the file
         let idInfo;

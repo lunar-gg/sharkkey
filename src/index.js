@@ -68,7 +68,7 @@ program // Set basic info
             let infoStrFile = `✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨
             Filename: ${file}
             Key: ${hashKey}
-            Features: ${features.toString()}
+            Features: ${Array.from(features).toString()}
             Deleted Original: ${options.deleteOriginal}
             Created ID: ${options.createID}
             Remember never to share the Key with anyone,
@@ -82,7 +82,7 @@ program // Set basic info
             let infoStr = `✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨
             Encrypted string: __string__
             Key: ${hashKey}
-            Features: ${features.toString()}
+            Features: ${Array.from(features).toString()}
 
             Remember never to share the Key with anyone,
             as they would be able to decrypt your file with it.
@@ -276,5 +276,5 @@ function handleOpts(opts) {
         features.push(opt);
     }
     if (features.length === 0) { features.push("None, this means anyone with the password can decrypt.") }
-    return [...[features], values]
+    return [features, values]
 }

@@ -1,7 +1,6 @@
 import process from 'process'
 import cryptography from "./🐟/cryptography.js";
 import compression from './🐟/compression.js';
-
 /**
  * 🦈.js Base class, Includes basic functions,
  * and imports to other classes stored in ./🐟/

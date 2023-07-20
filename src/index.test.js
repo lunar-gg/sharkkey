@@ -15,7 +15,13 @@ describe("files", () => {
 
     test("encrypt file", () => {
         fs.writeFileSync("jestFile.txt", "hello world", "utf8")
-        expect(shark.cryptography.encrypt(hashKey, "./jestFile.txt", true, [], false, false, false))
+        expect(shark.cryptography.encrypt(hashKey, "./jestFile.txt", true, {
+                features: [],
+                createIDFile: false,
+                isString: false,
+                doCopy: false,
+                userkey: "cHaNgE-mE"
+            }))
             .toBe(true)
     })
     test("encrypt file with id", () => {
@@ -24,7 +30,13 @@ describe("files", () => {
                 "jestPass", [],
                 true,
                 "jestFileId.txt")
-            expect(shark.cryptography.encrypt(hk, "./jestFileId.txt", true, [], true, false, false, "jestPass"))
+            expect(shark.cryptography.encrypt(hk, "./jestFileId.txt", true, {
+                    features: [],
+                    createIDFile: true,
+                    isString: false,
+                    doCopy: false,
+                    userkey: "jestPass"
+                }))
                 .toBe(true)
         })
         /* 🦈--> fix this- it works everywhere else than Github Actions lmao
@@ -53,7 +65,13 @@ describe("files", () => {
 })
 describe("strings", () => {
     test("encrypt string", () => {
-        expect(shark.cryptography.encrypt(hashKey, "hello", false, [], false, true, false))
+        expect(shark.cryptography.encrypt(hashKey, "hello", false, {
+                features: [],
+                createIDFile: false,
+                isString: true,
+                doCopy: false,
+                userkey: "jestPass"
+            }))
             .toBe(
                 "ODRmNWRmZGZkZmRmZGQ4ZDllODhkZGM1ZGZkZGNhYzg5ZTllY2FjODk5Y2U5Y2NjZGJkYmNmY2Y5ZWM5OWNjOWM3Y2VjOWNhYzc5YmM4Y2Q5ZGM2OWNjYTlhY2NjZmNjY2JjNmNiYzg5YWM2OWJjYTliY2JkYmRiY2NjZGM5Y2NjY2M2Y2NjYWM5Y2FjOWNhYzljZGNjYzljY2NkYzljYWM5Y2RjOWNkYzljZWNjYzZjOWNlY2NjZmRkZDNmNWRmZGZkZmRmZGQ5OTk2OTM5YWRkYzVkZmRkYjc5NjliOWI5YTkxZGRkM2Y1ZGZkZmRmZGZkZDk5OWE5ZThiOGE4ZDlhOGNkZGM1ZGZhNGEyZDNmNWRmZGZkZmRmZGRhYmIwYWJhZmRkYzVkZjk5OWU5MzhjOWFmNTgy"
             )

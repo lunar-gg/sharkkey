@@ -806,12 +806,19 @@ class Cryptography {
      * @param {boolean} createIDFile If we should create a ID file along with the encrypted file
      * @param {boolean} isString If the data is a string and not a file(path) set to true if --string is used
      * @param {boolean} doCopy If we should copy the output to the clipboard
+     * @param {string} [userkey="cHaNgE-mE"] Password for ID files, if created.
      * @returns {object} Object that contains information about the operation (file location +++)
      */
-    // 🦈--> Add return statements with objects
-    // 🦈--> switch to AES-256-GCM
-    static encrypt(key, data, deleteOriginal = false, features = [], createIDFile = false, isString = false, doCopy = false, userkey = "cHaNgE-mE") {
+    static encrypt(key, data, deleteOriginal = false, options = {}) {
+        const {
+            features = [],
+                createIDFile = false,
+                isString = false,
+                doCopy = false,
+                userkey = "cHaNgE-mE"
+        } = options;
         let encrypted = Cryptography.encryptData(data, key, isString, features)
+            // 🦈--> Add return statements with objects
         try {
             switch (isString) {
                 case true: // Return the encrypted string

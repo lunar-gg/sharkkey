@@ -109,12 +109,13 @@ program // Set basic info
             let encrypted = shark.cryptography.encrypt(
                 hashKey,
                 file,
-                options.deleteOriginal,
-                features,
-                options.createID,
-                options.string,
-                options.copy,
-                pass
+                options.deleteOriginal, {
+                    features: features || [],
+                    createIDFile: options.createID || false,
+                    isString: options.string || false,
+                    doCopy: options.copy || false,
+                    userkey: pass || "cHaNgE-mE"
+                }
             )
 
             // Define variables here so we can use them in the switch statement

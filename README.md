@@ -9,6 +9,14 @@
 [![OSSAR](https://github.com/lunar-gg/sharkkey/actions/workflows/ossar.yml/badge.svg)](https://github.com/lunar-gg/sharkkey/actions/workflows/ossar.yml)
 [![Codacy Security Scan](https://github.com/lunar-gg/sharkkey/actions/workflows/codacy.yml/badge.svg)](https://github.com/lunar-gg/sharkkey/actions/workflows/codacy.yml)
 [![ESLint](https://github.com/lunar-gg/sharkkey/actions/workflows/eslint.yml/badge.svg)](https://github.com/lunar-gg/sharkkey/actions/workflows/eslint.yml)
+[![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-black.svg)](https://sonarcloud.io/summary/new_code?id=lunar-gg_sharkkey)
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=lunar-gg_sharkkey)](https://sonarcloud.io/summary/new_code?id=lunar-gg_sharkkey)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=lunar-gg_sharkkey&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=lunar-gg_sharkkey)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=lunar-gg_sharkkey&metric=bugs)](https://sonarcloud.io/summary/new_code?id=lunar-gg_sharkkey)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=lunar-gg_sharkkey&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=lunar-gg_sharkkey)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=lunar-gg_sharkkey&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=lunar-gg_sharkkey)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=lunar-gg_sharkkey&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=lunar-gg_sharkkey)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=lunar-gg_sharkkey&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=lunar-gg_sharkkey)
 
 ## Do not use (yet),
 

@@ -192,28 +192,24 @@ program // Set basic info
             let outputStr, outputMessage;
             switch (options.string) {
                 case true:
-                    { // We decrypted a string, so show info relavant to that
-
-                        outputStr = infoStr // outputStr if options.copy if false
+                    // We decrypted a string, so show info relavant to that
+                    outputStr = infoStr // outputStr if options.copy if false
                         .replace(new RegExp(/ {8}/g), "") // Remove all unwanted whitespaces
                         .replace("__string__", originalText); // Replace __string__ with the actual output
 
-                        // If options.copy is true, apply the replace() function, if not just use outputStr as is
-                        outputMessage = options.copy ?
+                    // If options.copy is true, apply the replace() function, if not just use outputStr as is
+                    outputMessage = options.copy ?
                         outputStr.replace("🦈🔑\n✨", "The decrypted string has been copied to your clipboard\n\n🦈🔑\n✨") : outputStr;
-                        break;
-                    }
+                    break;
                 case false:
-                    {
-                        // We decrypted a file, so show info relavant to that
-                        outputStr = infoStrFile
+                    // We decrypted a file, so show info relavant to that
+                    outputStr = infoStrFile
                         .replace(new RegExp(/ {8}/g), "");
 
-                        // If options.copy is true, apply the replace() function, if not just use outputStr as is
-                        outputMessage = options.copy ?
+                    // If options.copy is true, apply the replace() function, if not just use outputStr as is
+                    outputMessage = options.copy ?
                         outputStr.replace("🦈🔑\n✨", "The content of the decrypted file has been copied to your clipboard\n\n🦈🔑\n✨") : outputStr;
-                        break;
-                    }
+                    break;
                 default: // options.string was neither true or false
                     throw new Error("Value of options.string was unexpected");
             }

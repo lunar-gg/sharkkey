@@ -10,7 +10,7 @@
         "build-win-path": " .\\node_modules\\.bin\\esbuild .\\src\\index.js --bundle --outdir=bundle --platform=node && pkg -t node16-win-x64  .\\bundle\\index.js --compress GZip -o dist/sharkkey-win-x64 && pkg -t node16-linux-x64  .\\bundle\\index.js --compress GZip  -o dist/sharkkey-linux-x64",
         "build-arm": "pkg -t node16-linux-arm64  .\\bundle\\index.js --compress GZip  -o dist/sharkkey-linux-arm64"
     },
-    "private": true,
+    "private": false,
     "packageManager": "npm@9.6.6",
     "type": "module",
     "keywords": [
@@ -34,6 +34,7 @@
     },
     "devDependencies": {
         "eslint": "^8.45.0",
-        "jest": "^29.6.1"
+        "jest": "^29.6.1",
+        "remark-preset-lint-markdown-style-guide": "^5.1.3"
     }
 }

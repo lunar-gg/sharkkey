@@ -7,7 +7,7 @@
 [![codecov](https://codecov.io/gh/lunar-gg/sharkkey/branch/main/graph/badge.svg?token=316VHCOLS6)](https://codecov.io/gh/lunar-gg/sharkkey)
 [![OSSAR](https://github.com/lunar-gg/sharkkey/actions/workflows/ossar.yml/badge.svg)](https://github.com/lunar-gg/sharkkey/actions/workflows/ossar.yml)
 [![Codacy Security Scan](https://github.com/lunar-gg/sharkkey/actions/workflows/codacy.yml/badge.svg)](https://github.com/lunar-gg/sharkkey/actions/workflows/codacy.yml)
-
+[![ESLint](https://github.com/lunar-gg/sharkkey/actions/workflows/eslint.yml/badge.svg)](https://github.com/lunar-gg/sharkkey/actions/workflows/eslint.yml)
 ## Do not use, as the encryption workflow is constantly changing, so files encrypted with one version might not be decryptable with new versions. (Until the final workflow has been decided)
 ### Resonably secure encryption
 

@@ -111,8 +111,8 @@ describe("generic", () => {
             .toMatchObject({ filename: 'index.test.js', extension: '.js', directoryPath: '.' });
     });
     test("string to hex hash", () => {
-        expect(shark.cryptography.getKeyFromPassphrase("hello world").toString("hex"))
-            .toBe("f3399f2597c239c53bb3ac36a611ad558ae61aea3a20736455179d4390050482");
+        expect(shark.cryptography.hash.fish128("hello world", "utf8").toString("hex"))
+            .toBe("7a3405bfd4fc5750e747480dcd60510a35a92bbb489b041eb5c70a891f2fc634");
     });
 });
 describe("fish hash", () => {

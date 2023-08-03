@@ -217,15 +217,6 @@ class Cryptography {
     }
 
     /**
-     * Generates a pbkdf2 (sha512) hash based on the given string
-     * @param {string} passphrase 
-     * @returns {string}
-     */
-    static getKeyFromPassphrase(passphrase) {
-        return crypto.pbkdf2Sync(passphrase, 'salt', 100000, 32, 'sha512');
-    }
-
-    /**
      * Given features[] and "file path or string" returns computed ID string
      * @param {string[]} features Array of strings, taken from args, containing info about what info we use to create the ID string for encryption
      * @param {string} file File path, or just a text string if --string is used
@@ -537,7 +528,7 @@ class Cryptography {
             const jsonString = JSON.stringify(obj); // Stringify the object
 
             // Parses the given passphrase into a pbkdf2 (sha512) hash
-            const parsedKey = Cryptography.getKeyFromPassphrase(passphrase);
+            const parsedKey = Cryptography.hash.fish128(passphrase, "utf8");
 
             // Create the cipher and encrypt the data
             const iv = Buffer.from(Cryptography.hash.fish64(parsedKey, "utf8", true), 'utf8');
@@ -560,7 +551,7 @@ class Cryptography {
          */
         static decryptObject(passphrase, data) {
             // Parse provided passphrase
-            const parsedKey = Cryptography.getKeyFromPassphrase(passphrase);
+            const parsedKey = Cryptography.hash.fish128(passphrase, "utf8");
 
             // Define encryptedString as the input parameter id, and unobfuscate it
             let encryptedString = data;

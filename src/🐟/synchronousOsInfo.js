@@ -4,8 +4,6 @@ import process from 'process';
 /* 
 Code in this file was blatantly stolen from https://github.com/sebhildebrandt/systeminformation
 as i needed a quick and dirty synchronous way to get OS information.
-
-Go sponser them!
 https://ko-fi.com/sebhildebrandt
 https://www.buymeacoffee.com/systeminfo
 

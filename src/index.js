@@ -49,6 +49,10 @@ program // Set basic info
         "Include the name of the file being encrypted as part of the encryption process")
     .option('--totp',
         "Require TOTP authentacation before decrypting")
+    .option('--compression',
+        "Compress output")
+    .option('--usb',
+        "Require specefic USB drive to be connected before decrypting")
     .action((file, pass, options) => {
         let aaa = handleOpts(options);
         let features = aaa[0];
@@ -99,9 +103,12 @@ program // Set basic info
                     createIDFile: options.createID,
                     isString: options.string,
                     doCopy: options.copy,
-                    userkey: pass || "cHaNgE-mE"
+                    userkey: pass || "cHaNgE-mE",
+                    compression: options.compression || false
                 }
             );
+
+
 
             // Define variables here so we can use them in the switch statement
             let outputStr, outputMessage;
@@ -150,6 +157,8 @@ program // Set basic info
         "Delete original file after encryption")
     .option('-s, --string',
         "Encrypt a string instead of a file")
+    .option('--compression',
+        'Decompress output')
     .option('-c, --copy',
         "Copy the decrypted file or string to the clipboard after decryption")
     .action((file, pass, idfile, options) => {
@@ -170,7 +179,7 @@ program // Set basic info
         ✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨`;
 
         // Check if we're gonna be using an ID file to decrypt
-        if (Object.prototype.hasOwnProperty.call(options, 'useID') || options.useID) {
+        if (options.useID) {
             // Use ID to decrypt fiie
             // 🦈--> Implement logic
             throw new Error("Not implemented");
@@ -182,7 +191,8 @@ program // Set basic info
                     file,
                     options.deleteOriginal,
                     options.string,
-                    options.copy
+                    options.copy,
+                    options.compression
                 );
             } catch (err) {
                 console.log("[🦈🔑] We were unable to decrypt the data with the info you provided.");
@@ -263,9 +273,9 @@ program.parse(process.argv);
 
 function handleOpts(opts) {
     let features = [];
-    let values = { deleteOriginal: false, createID: false, string: false, copy: false, useID: false, verbose: false };
+    let values = { deleteOriginal: false, createID: false, string: false, copy: false, useID: false, verbose: false, compression: false };
     for (const opt in opts) {
-        if (["deleteOriginal", "createID", "string", "copy", "useID", "verbose"].includes(opt)) {
+        if (["deleteOriginal", "createID", "string", "copy", "useID", "verbose", "compression"].includes(opt)) {
             values[opt] = true;
             continue;
         }

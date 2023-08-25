@@ -16,10 +16,11 @@ import base32 from 'thirty-two';
 import clipboard from 'clipboardy';
 import qrcode from 'qrcode-terminal';
 import nodeMachineId from 'node-machine-id';
+import drivelist from './disklist.js';
+import Compression from './compression.js';
 const { machineIdSync } = nodeMachineId;
 // Declare idObjectFile so we can use it globally
 let idObjectFile;
-
 /**
  * Contains cryptographic functions for 🦈.js
  */
@@ -259,7 +260,17 @@ class Cryptography {
         if (features.includes("filename")) {
             id += `${file}`;
         }
+        /*
+        For this to work we need to refactor disklist.js to provide the exact same output no matter what machine its connected to (win/unix/darwin)
+        As of right now, the output is different depending on what OS it is, even tho it is the same physical drive.
 
+        if (features.includes("usb")) {
+            let drive = Cryptography.usb.getSerialHex() || false;
+            if (typeof drive !== 'object') throw new Error("No useable USB drive connected.");
+            console.log(`Using drive ${drive.displayName} - ${drive.description} for encryption. This means you need this USB drive to be connected when you decrypt.`);
+            id += `${drive.serial}`;
+        }
+        */
         // Remove the spaces from the ID string
         id = id.replace(/ /g, "");
         return id;
@@ -352,13 +363,13 @@ class Cryptography {
          * @returns {string} Altered MD6 hash.
          */
         static md6(md6key) {
-            // Reverse md5
+            // Reverse md6
             md6key = md6key.split("").reverse().join("");
 
             // Shift it by its own first int
             md6key = Cryptography.shift(md6key);
 
-            // Reverse md5
+            // Reverse md6
             md6key = md6key.split("").reverse().join("");
 
             // split by every other - into two arrays (xx, yy)
@@ -696,7 +707,7 @@ class Cryptography {
      * @param {string[]} [features=[]] Array of strings, taken from args, containing info about what info we use to create the ID string for encryption
      * @returns {string} Base64 encoded hex obfuscated object that contains file / string info, and the raw encrypted data
      */
-    static encryptData(data, key, isString, features = []) {
+    static encryptData(data, key, isString, features) {
         let dataToEncrypt;
 
         switch (isString) {
@@ -724,17 +735,9 @@ class Cryptography {
             tag = cipher.getAuthTag();
             rawEncrypted = enc + "$$" + tag.toString('hex') + "$$" + iv.toString('hex');
             encrypted = Cryptography.object.writeFileObject(rawEncrypted, key, features, isString ? "string" : data);
+
             return Buffer.from(encrypted, "utf8").toString("base64"); // encrypts to base64
         } catch (err) {
-            console.log("Error in encryptData! - isString:", isString);
-            console.log("Relavent variables:");
-            console.log("Inputs: Data:", data);
-            console.log("Inputs: Key:", key);
-            console.log("Inputs: isString:", isString);
-            console.log("Internal: dataToEncrypt:", dataToEncrypt);
-            console.log("Internal: rawEncrypted:", rawEncrypted);
-            console.log("Internal: encrypted:", encrypted);
-            console.log("Return: encrypted (Base64):", Buffer.from(encrypted, "utf8").toString("base64"));
             console.error(err);
             process.exit(0);
         }
@@ -800,15 +803,20 @@ class Cryptography {
      * @param {string} [userkey="cHaNgE-mE"] Password for ID files, if created.
      * @returns {object} Object that contains information about the operation (file location +++)
      */
-    static encrypt(key, data, deleteOriginal = false, options = {}) {
-        const {
-            features = [],
-                createIDFile = false,
-                isString = false,
-                doCopy = false,
-                userkey = "cHaNgE-mE"
-        } = options;
+    static encrypt(key, data, deleteOriginal = false, options) {
+
+        let features = options.features || [];
+        let createIDFile = options.createIDFile || false;
+        let isString = options.isString || false;
+        let doCopy = options.doCopy || false;
+        let userkey = options.userkey || 'cHaNgE-mE';
+        let compression = options.compression || false;
+
         let encrypted = Cryptography.encryptData(data, key, isString, features);
+
+        if (compression) {
+            encrypted = Compression.compressString(encrypted);
+        }
         // 🦈--> Add return statements with objects
         try {
             switch (isString) {
@@ -856,17 +864,27 @@ class Cryptography {
      * @param {boolean} isString If the data is a string and not a file(path) - set to true if --string is used
      * @returns {string} Decrypted data
      */
-    static decryptData(key, data, isString) {
+    static decryptData(key, data, isString, compression = false) {
         // declare dataToDecrypt for use later
         let dataToDecrypt;
+        let file;
         try {
             // set dataToDecrypt to the correct data, and decode it from Base64
             switch (isString) {
                 case true:
+                    file = 'string';
+                    if (compression) {
+                        data = Compression.decompressString(data);
+                    }
                     dataToDecrypt = Buffer.from(data, "base64").toString("utf8");
                     break;
                 case false:
-                    dataToDecrypt = Buffer.from(fs.readFileSync(data, "utf8"), "base64").toString("utf8");
+                    file = data.replace('.🦈🔑', '');
+                    if (compression) {
+                        dataToDecrypt = Buffer.from(Compression.decompressString(fs.readFileSync(data, "utf8")), "base64").toString("utf8");
+                    } else {
+                        dataToDecrypt = Buffer.from(fs.readFileSync(data, "utf8"), "base64").toString("utf8");
+                    }
                     break;
                 default:
                     console.log("decryptData() - Parameter - isString:", isString);
@@ -877,7 +895,7 @@ class Cryptography {
             let jsonData = Cryptography.object.readFileObject(dataToDecrypt);
 
             // Calculate the hashed key
-            let hashKey = Cryptography.calculateKey(key, jsonData.features, false);
+            let hashKey = Cryptography.calculateKey(key, jsonData.features, false, file);
 
             // Check if the file is secured with TOTP
             // 🦈--> Gotta think of a better way of implementing this, as of right now - anyone with the source code, JS knowlege, and time can bypass it.
@@ -919,9 +937,9 @@ class Cryptography {
      * @param {boolean} [isString=false] 
      * @param {boolean} [doCopy=false] 
      */
-    static decrypt(key, file, deleteOriginal = false, isString = false, doCopy = false) {
+    static decrypt(key, file, deleteOriginal = false, isString = false, doCopy = false, compression = false) {
         // Decrypt the file / string
-        let originalText = Cryptography.decryptData(key, file, isString); // We declare it here first so we can use it in the low later.
+        let originalText = Cryptography.decryptData(key, file, isString, compression); // We declare it here first so we can use it in the low later.
 
         switch (isString) {
             case true:
@@ -973,22 +991,64 @@ class Cryptography {
      * @returns {object} ID Object
      */
     static checkid(file, key, doCopy = false) {
-        if (fs.existsSync(file)) {
-            let id;
-            let fileData = fs.readFileSync(file, 'utf8');
-            try { // Try to decrypt
-                id = Cryptography.object.decryptObject(key, fileData);
-            } catch (err) { // 99% chance of it being cased by using the incorrect password, but log to console just in case.
-                console.log(err);
-                throw new Error("An error occured while trying to decrypt the file info! - Have you entered the right password?");
+            if (fs.existsSync(file)) {
+                let id;
+                let fileData = fs.readFileSync(file, 'utf8');
+                try { // Try to decrypt
+                    id = Cryptography.object.decryptObject(key, fileData);
+                } catch (err) { // 99% chance of it being cased by using the incorrect password, but log to console just in case.
+                    console.log(err);
+                    throw new Error("An error occured while trying to decrypt the file info! - Have you entered the right password?");
+                }
+                if (doCopy) {
+                    // Stringify the id object and copy it to the clipboard
+                    clipboard.writeSync(JSON.stringify(id, null, 2));
+                }
+                return id; // Return the id object
+            } else // 🦈--> This is not serious enough to stop the program, so write an exception handler on the other end.
+            { throw new Error("File does not exist."); }
+        }
+        /**
+         * Class to work with USB Hard drives for verification
+         */
+    static usb = class {
+        /**
+         * @param {boolean} [useUnsafeIdentifiers=false] Wether or not to use unsafe drive identifiers that might change, such as display name, mountpoints, and label
+         * If set to false, we will use these values: Size, Protected, System, Removable
+         * @returns Hex string a pseudo serial number of the USB Drive
+         * TODO: Add var with name so we get the correct USB Drive, and not just some random one.
+         * TODO: Add function to return USB Drive name, and other identifiers to show to the user
+         * so they can select the right USB drive they would like to use for encryption.
+         */
+        static getSerialHex(useUnsafeIdentifiers = false) {
+            try {
+                const drives = drivelist.listDrivesSync({ returnOnlyRemovable: false });
+                let drive = drives.find(_drive => _drive.removable && !_drive.system);
+                let driveHashString;
+                switch (useUnsafeIdentifiers) {
+                    case true:
+                        driveHashString = drive.displayName + drive.label +
+                            JSON.stringify(drive.mountpoints) + drive.description + drive.size +
+                            drive.removable + drive.system + drive.protected;
+                        break;
+                    case false:
+                        driveHashString = drive.size + drive.removable +
+                            drive.system + drive.protected;
+                        break;
+                }
+                driveHashString = Buffer.from(encodeURIComponent(driveHashString.replace(/ /g, ""))).toString("hex");
+                return {
+                    displayName: drive.displayName,
+                    description: drive.description,
+                    serial: Cryptography.hash.fish512(driveHashString, "hex")
+                };
+            } catch (err) {
+                throw new Error(err);
             }
-            if (doCopy) {
-                // Stringify the id object and copy it to the clipboard
-                clipboard.writeSync(JSON.stringify(id, null, 2));
-            }
-            return id; // Return the id object
-        } else // 🦈--> This is not serious enough to stop the program, so write an exception handler on the other end.
-        { throw new Error("File does not exist."); }
-    }
+        }
+        static checkSerial() {
+
+        }
+    };
 }
 export default Cryptography;

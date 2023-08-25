@@ -1,6 +1,6 @@
 export default {
     collectCoverage: true,
-    coverageReporters: ['json'],
+    coverageReporters: ['json', 'lcov'],
     moduleDirectories: [
         "node_modules"
     ],

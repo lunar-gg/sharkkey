@@ -26,6 +26,13 @@ So files encrypted with one version might not be decryptable with new versions.
 
 ### Resonably secure encryption
 
+Changelog 8/25/23 12; :
+-   General code coverage improvements
+
+-   Starting to implement encryption using a removable USB drive as an identifier.
+
+-   Added support for compression
+
 Changelog 7/19/23 03~ :
 -   General code quality improvements (Ongoing)
 

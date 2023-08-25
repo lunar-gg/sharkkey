@@ -1,6 +1,7 @@
 import process from 'process';
 import cryptography from "./🐟/cryptography.js";
 import compression from './🐟/compression.js';
+import disklist from './🐟/disklist.js';
 /**
  * 🦈.js Base class, Includes basic functions,
  * and imports to other classes stored in ./🐟/
@@ -70,5 +71,7 @@ class Shark {
     static cryptography = cryptography;
     // Imports the compression class
     static compression = compression;
+    // Imports the disklist class
+    static disklist = disklist;
 }
 export default Shark;

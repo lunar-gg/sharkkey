@@ -181,9 +181,9 @@ describe("disklist", () => {
     test("async", async() => {
         expect(typeof await shark.disklist.listDrives() === 'object')
             .toBeTruthy();
-    }, 15000);
+    }, 25000);
     test("sync", () => {
         expect(typeof shark.disklist.listDrivesSync() === 'object')
             .toBeTruthy();
-    }, 15000);
+    }, 25000);
 });

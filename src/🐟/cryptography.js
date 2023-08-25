@@ -16,8 +16,8 @@ import base32 from 'thirty-two';
 import clipboard from 'clipboardy';
 import qrcode from 'qrcode-terminal';
 import nodeMachineId from 'node-machine-id';
-import drivelist from './disklist.js';
 import Compression from './compression.js';
+import drivelist from './disklist.js';
 const { machineIdSync } = nodeMachineId;
 // Declare idObjectFile so we can use it globally
 let idObjectFile;
@@ -470,7 +470,7 @@ class Cryptography {
 
             for (const hexDigit of hexString) {
                 // Check if the hexMapping contains the current hexDigit.
-                if (Object.prototype.hasOwnProperty.call(hexMapping, hexDigit)) {
+                if (Object.hasOwn(hexMapping, hexDigit)) {
                     // if the hexDigit is found in the mapping, replace it. If not, leave it as it is
                     obfuscatedString += hexMapping[hexDigit];
                 } else {
@@ -511,7 +511,7 @@ class Cryptography {
             let deobfuscatedString = '';
 
             for (const hexDigit of obfuscatedHex) {
-                if (Object.prototype.hasOwnProperty.call(hexMapping, hexDigit)) {
+                if (Object.hasOwn(hexMapping, hexDigit)) {
                     // if the hexDigit is found in the mapping, replace it. If not, leave it as it is
                     deobfuscatedString += hexMapping[hexDigit];
                 } else {
@@ -803,14 +803,16 @@ class Cryptography {
      * @param {string} [userkey="cHaNgE-mE"] Password for ID files, if created.
      * @returns {object} Object that contains information about the operation (file location +++)
      */
-    static encrypt(key, data, deleteOriginal = false, options) {
+    static encrypt(key, data, options, deleteOriginal = false) {
 
-        let features = options.features || [];
-        let createIDFile = options.createIDFile || false;
-        let isString = options.isString || false;
-        let doCopy = options.doCopy || false;
-        let userkey = options.userkey || 'cHaNgE-mE';
-        let compression = options.compression || false;
+        const {
+            features = [],
+                createIDFile = false,
+                isString = false,
+                doCopy = false,
+                userkey = 'cHaNgE-mE',
+                compression = false
+        } = options;
 
         let encrypted = Cryptography.encryptData(data, key, isString, features);
 
@@ -1016,9 +1018,7 @@ class Cryptography {
          * @param {boolean} [useUnsafeIdentifiers=false] Wether or not to use unsafe drive identifiers that might change, such as display name, mountpoints, and label
          * If set to false, we will use these values: Size, Protected, System, Removable
          * @returns Hex string a pseudo serial number of the USB Drive
-         * TODO: Add var with name so we get the correct USB Drive, and not just some random one.
-         * TODO: Add function to return USB Drive name, and other identifiers to show to the user
-         * so they can select the right USB drive they would like to use for encryption.
+         * 🦈: Add var with name so we get the correct USB Drive, and not just some random one.
          */
         static getSerialHex(useUnsafeIdentifiers = false) {
             try {
@@ -1045,9 +1045,6 @@ class Cryptography {
             } catch (err) {
                 throw new Error(err);
             }
-        }
-        static checkSerial() {
-
         }
     };
 }

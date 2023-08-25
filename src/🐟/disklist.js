@@ -10,7 +10,7 @@ let driveArray = [];
     console.error(err);
 });
  */
-export default class disklist {
+export default class Disklist {
     /**
      * Get drives sync
      * @param {Object} options - Options object
@@ -22,41 +22,16 @@ export default class disklist {
      * @returns {(Object|Array<Object>)} Returns either am array of objects of the drive, or a single drive object
      */
     static listDrivesSync(options = { returnOnlyRemovable: false, filter: {} }) {
-        helpers.populateArrays();
+        Helpers.populateArrays();
         // Return only removable devices if param is set to it
         if (options.returnOnlyRemovable) {
             driveArray = driveArray.filter((drive) => drive.MediaType === "Removable Media");
         }
-        // True of options.filter (Object) is defined, AND it's not empty
-        if (options.filter && Object.keys(options.filter).length !== 0) {
-            // Checks to make sure the required varibles are defined and are the correct types
-            const { key, value, limit } = options.filter;
-            const hasValidKeyType = typeof key === "string";
-            const hasValidLimitType = limit && typeof limit === "number";
-            const hasValidValueType = typeof value === "string" || typeof value === "number";
 
-            // If key & value types are valid
-            if (hasValidKeyType && hasValidValueType) {
-                // Check if the desired filter key is a string or a number
-                if (typeof driveArray[0][key] === "string" || typeof driveArray[0][key] === "number") {
-                    // Apply the filter
-                    driveArray = driveArray.filter((drive) => drive[key] === value);
-                } else {
-                    throw new Error("Invalid key type in driveArray.");
-                }
-            } else {
-                if (hasValidLimitType) {
-                    if (key || value) {
-                        throw new Error("Filter key and or value or the incorrect types");
-                    } else {
-                        // filter key & value is not defined, but filter limit type is valid
-                        // Slice the driveArray to match the max item limit
-                        driveArray = driveArray.slice(0, options.filter.limit);
-                    }
-                } else {
-                    throw new Error("The options.filter object is missing either the 'key' or 'value' key.");
-                }
-            }
+        try {
+            Helpers.filter(options);
+        } catch (err) {
+            throw new Error(err);
         }
 
         /** Final checks and returns */
@@ -85,41 +60,16 @@ export default class disklist {
      */
     static async listDrives(options = { returnOnlyRemovable: false, filter: {} }) {
         return new Promise((resolve, reject) => {
-            helpers.populateArrays();
+            Helpers.populateArrays();
             // Return only removable devices if param is set to it
             if (options.returnOnlyRemovable) {
                 driveArray = driveArray.filter((drive) => drive.MediaType === "Removable Media");
             }
-            // True of options.filter (Object) is defined, AND it's not empty
-            if (options.filter && Object.keys(options.filter).length !== 0) {
-                // Checks to make sure the required varibles are defined and are the correct types
-                const { key, value, limit } = options.filter;
-                const hasValidKeyType = typeof key === "string";
-                const hasValidLimitType = limit && typeof limit === "number";
-                const hasValidValueType = typeof value === "string" || typeof value === "number";
 
-                // If key & value types are valid
-                if (hasValidKeyType && hasValidValueType) {
-                    // Check if the desired filter key is a string or a number
-                    if (typeof driveArray[0][key] === "string" || typeof driveArray[0][key] === "number") {
-                        // Apply the filter
-                        driveArray = driveArray.filter((drive) => drive[key] === value);
-                    } else {
-                        reject("Invalid key type in driveArray.");
-                    }
-                } else {
-                    if (hasValidLimitType) {
-                        if (key || value) {
-                            reject("Filter key and or value or the incorrect types");
-                        } else {
-                            // filter key & value is not defined, but filter limit type is valid
-                            // Slice the driveArray to match the max item limit
-                            driveArray = driveArray.slice(0, options.filter.limit);
-                        }
-                    } else {
-                        reject("The options.filter object is missing either the 'key' or 'value' key.");
-                    }
-                }
+            try {
+                Helpers.filter(options);
+            } catch (err) {
+                reject(err);
             }
 
             /** Final checks and returns */
@@ -137,7 +87,7 @@ export default class disklist {
         });
     }
 }
-class helpers {
+class Helpers {
     static getDriveLetter(index) {
         driveLettersArray.forEach(dl => { // If no drive name, set the name to Unnamed Drive
             if (dl.Label === null) dl.Label = "Unnamed Disk";
@@ -168,7 +118,7 @@ class helpers {
                 drives = JSON.parse(execSync('gwmi win32_diskdrive | select Model, CapabilityDescriptions, Index, PNPDeviceID, MediaType, SerialNumber, Size, Name, InterfaceType, BytesPerSector, Partitions, Status, SectorsPerTrack, TotalCylinders, TotalHeads, TotalSectors, TotalTracks, TracksPerCylinder, CompressionMethod, FirmwareRevision, Manufacturer | ConvertTo-json', { 'shell': 'powershell.exe' }));
                 // Enumerate the array of drives, and add the keys from getDriveLetter() to the drive objectuyhgvbkhjhj
                 drives.forEach(drive => {
-                    let dl = helpers.getDriveLetter(drive.Index);
+                    let dl = Helpers.getDriveLetter(drive.Index);
                     driveArray.push({
                         device: drive.Name,
                         displayName: dl.DriveLetter,
@@ -194,7 +144,7 @@ class helpers {
                     if (item.type === 'disk') {
                         const driveLetter = `/dev/${item.name}`;
                         const displayName = driveLetter;
-                        const description = helpers.getDriveDescription(item.name);
+                        const description = Helpers.getDriveDescription(item.name);
                         const isReadOnly = item.ro === '1';
                         const isSystem = false; // For Linux, we can't directly identify the boot drive like in Windows.
                         const removable = item.rm;
@@ -225,6 +175,37 @@ class helpers {
                 break;
             default:
                 throw new Error("Your OS is not supported by disklist");
+        }
+    }
+    static filter(options) {
+        // True if options.filter (Object) is defined, AND it's not empty
+        if (options.filter && Object.keys(options.filter).length !== 0) {
+            // Checks to make sure the required varibles are defined and are the correct types
+            const { key, value, limit } = options.filter;
+            const hasValidKeyType = typeof key === "string";
+            const hasValidLimitType = limit && typeof limit === "number";
+            const hasValidValueType = typeof value === "string" || typeof value === "number";
+
+            // If key & value types are valid
+            if (hasValidKeyType && hasValidValueType) {
+                // Check if the desired filter key is a string or a number
+                if (typeof driveArray[0][key] === "string" || typeof driveArray[0][key] === "number") {
+                    // Apply the filter
+                    driveArray = driveArray.filter((drive) => drive[key] === value);
+                } else {
+                    throw new Error("Invalid key type in driveArray.");
+                }
+            } else if (hasValidLimitType) {
+                if (key || value) {
+                    throw new Error("Filter key and or value or the incorrect types");
+                } else {
+                    // filter key & value is not defined, but filter limit type is valid
+                    // Slice the driveArray to match the max item limit
+                    driveArray = driveArray.slice(0, options.filter.limit);
+                }
+            } else {
+                throw new Error("The options.filter object is missing either the 'key' or 'value' key.");
+            }
         }
     }
 }

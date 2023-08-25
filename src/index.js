@@ -97,15 +97,14 @@ program // Set basic info
             // Encrypt the data
             let encrypted = shark.cryptography.encrypt(
                 hashKey,
-                file,
-                options.deleteOriginal, {
+                file, {
                     features: features || [],
                     createIDFile: options.createID,
                     isString: options.string,
                     doCopy: options.copy,
                     userkey: pass || "cHaNgE-mE",
                     compression: options.compression || false
-                }
+                }, options.deleteOriginal
             );
 
 

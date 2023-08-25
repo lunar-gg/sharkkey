@@ -87,7 +87,7 @@ function osInfo() {
 
 function handleLinux(result) {
     let release = {};
-    let lines = execSync('cat /etc/*-release; cat /usr/lib/os-release; cat /etc/openwrt_release').toString().split('\n');
+    let lines = execSync('cat /etc/*-release; cat /usr/lib/os-release').toString().split('\n');
     lines.forEach(function(line) {
         if (line.indexOf('=') !== -1) {
             release[line.split('=')[0].trim().toUpperCase()] = line.split('=')[1].trim();

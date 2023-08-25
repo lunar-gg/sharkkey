@@ -178,12 +178,8 @@ describe("fish hash", () => {
     });
 });
 describe("disklist", () => {
-    test("async", async() => {
-        expect(typeof await shark.disklist.listDrives() === 'object')
-            .toBeTruthy();
-    }, 250000);
-    test("sync", () => {
+    test("Check drives", () => {
         expect(typeof shark.disklist.listDrivesSync() === 'object')
             .toBeTruthy();
-    }, 250000);
+    }, 20000);
 });

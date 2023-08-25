@@ -30,9 +30,7 @@
         "node-machine-id": "^1.1.12",
         "qrcode-terminal": "^0.12.0",
         "readline-sync": "^1.4.10",
-        "totp.js": "^0.0.1",
-        "usb": "^2.9.0",
-        "usb-detection": "^4.14.2"
+        "totp.js": "^0.0.1"
     },
     "devDependencies": {
         "eslint": "^8.45.0",

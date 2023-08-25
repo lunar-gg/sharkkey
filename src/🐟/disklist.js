@@ -178,33 +178,27 @@ class Helpers {
         }
     }
     static filter(options) {
-        // Check if options.filter is defined and not empty
-        if (options.filter && Object.keys(options.filter).length !== 0) {
-            // Destructure the filter properties
-            const { key, value, limit } = options.filter;
+        if (!options.filter || Object.keys(options.filter).length === 0) {
+            return; // No filtering needed, exit early
+        }
 
-            // Check for valid key and value types
-            if (typeof key === "string" && (typeof value === "string" || typeof value === "number")) {
-                // Check if the specified key type is valid in driveArray
-                if (typeof driveArray[0][key] === "string" || typeof driveArray[0][key] === "number") {
-                    // Apply the filter based on the key-value pair
-                    driveArray = driveArray.filter((drive) => drive[key] === value);
-                } else {
-                    // Throw an error for an invalid key type
-                    throw new Error("Invalid key type in driveArray.");
-                }
-            } else if (limit && typeof limit === "number") {
-                // Check if key or value are provided with an invalid limit type
-                if (key || value) {
-                    throw new Error("Filter key and/or value have incorrect types");
-                } else {
-                    // Slice the driveArray to match the specified limit
-                    driveArray = driveArray.slice(0, options.filter.limit);
-                }
+        const { key, value, limit } = options.filter;
+
+        if (typeof limit === "number") {
+            if (!key && !value) {
+                driveArray = driveArray.slice(0, limit);
             } else {
-                // Throw an error for missing key or value
-                throw new Error("The options.filter object is missing either the 'key' or 'value' key.");
+                throw new Error("Filter key and/or value have incorrect types");
             }
+        } else if (typeof key === "string" && (typeof value === "string" || typeof value === "number")) {
+            if (typeof driveArray[0][key] === "string" || typeof driveArray[0][key] === "number") {
+                driveArray = driveArray.filter((drive) => drive[key] === value);
+            } else {
+                throw new Error("Invalid key type in driveArray.");
+            }
+        } else {
+            throw new Error("The options.filter object is missing either the 'key' or 'value' key.");
         }
     }
+
 }

@@ -178,32 +178,31 @@ class Helpers {
         }
     }
     static filter(options) {
-        // True if options.filter (Object) is defined, AND it's not empty
+        // Check if options.filter is defined and not empty
         if (options.filter && Object.keys(options.filter).length !== 0) {
-            // Checks to make sure the required varibles are defined and are the correct types
+            // Destructure the filter properties
             const { key, value, limit } = options.filter;
-            const hasValidKeyType = typeof key === "string";
-            const hasValidLimitType = limit && typeof limit === "number";
-            const hasValidValueType = typeof value === "string" || typeof value === "number";
 
-            // If key & value types are valid
-            if (hasValidKeyType && hasValidValueType) {
-                // Check if the desired filter key is a string or a number
+            // Check for valid key and value types
+            if (typeof key === "string" && (typeof value === "string" || typeof value === "number")) {
+                // Check if the specified key type is valid in driveArray
                 if (typeof driveArray[0][key] === "string" || typeof driveArray[0][key] === "number") {
-                    // Apply the filter
+                    // Apply the filter based on the key-value pair
                     driveArray = driveArray.filter((drive) => drive[key] === value);
                 } else {
+                    // Throw an error for an invalid key type
                     throw new Error("Invalid key type in driveArray.");
                 }
-            } else if (hasValidLimitType) {
+            } else if (limit && typeof limit === "number") {
+                // Check if key or value are provided with an invalid limit type
                 if (key || value) {
-                    throw new Error("Filter key and or value or the incorrect types");
+                    throw new Error("Filter key and/or value have incorrect types");
                 } else {
-                    // filter key & value is not defined, but filter limit type is valid
-                    // Slice the driveArray to match the max item limit
+                    // Slice the driveArray to match the specified limit
                     driveArray = driveArray.slice(0, options.filter.limit);
                 }
             } else {
+                // Throw an error for missing key or value
                 throw new Error("The options.filter object is missing either the 'key' or 'value' key.");
             }
         }

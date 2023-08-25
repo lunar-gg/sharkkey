@@ -24,7 +24,6 @@
     "dependencies": {
         "clipboardy": "^3.0.0",
         "commander": "^11.0.0",
-        "drivelist": "^11.1.0",
         "esbuild": "0.18.13",
         "ip": "^1.1.8",
         "md6-hash": "^1.0.0",

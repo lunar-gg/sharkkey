@@ -38,7 +38,7 @@ export default class Disklist {
 
         // If driveArray is empty, throw error
         if (driveArray.length == 0) {
-            throw new Error("No drives found");
+            return { info: "No drives found." }
         }
         // If only one drive in array, return the object instead of an array with only one item
         if (driveArray.length == 1) {
@@ -76,7 +76,7 @@ export default class Disklist {
 
             // If driveArray is empty, throw error
             if (driveArray.length == 0) {
-                throw new Error("No drives found");
+                return { info: "No drives found." };
             }
             // If only one drive in array, return the object instead of an array with only one item
             if (driveArray.length == 1) {

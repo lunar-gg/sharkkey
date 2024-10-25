@@ -2,7 +2,7 @@
 
 [![Node.js Build](https://github.com/lunar-gg/sharkkey/actions/workflows/Node.yml/badge.svg?branch=main)](https://github.com/lunar-gg/sharkkey/actions/workflows/Node.yml)
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
-![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/lunar-gg/sharkkey/main)
+![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/fishylunar/sharkkey/main)
 
 ![Known Vulnerabilities](https://snyk.io/test/github/lunar-gg/sharkkey/badge.svg)
 [![codecov](https://codecov.io/gh/lunar-gg/sharkkey/branch/main/graph/badge.svg?token=316VHCOLS6)](https://codecov.io/gh/lunar-gg/sharkkey)

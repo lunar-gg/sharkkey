@@ -127,114 +127,11 @@ class Helpers {
 
         return 'Unnamed Disk';
     }
+
     static populateArrays() {
-        // Declare function scoped vars
-        let drives = [];
-        switch (os.platform()) {
-            case "win32":
-                // Get the drive letters / root paths + device name
-                driveLettersArray = JSON.parse(execSync('Get-CimInstance Win32_Volume | Where-Object { $_.DriveType -eq 2 -or $_.DriveType -eq 3 } | ForEach-Object { if ($_.DriveLetter) { [PSCustomObject]@{ DriveLetter = $_.DriveLetter; IsReadOnly = [bool]($_.Attributes -band 1); BootVolume = $_.BootVolume; Label = $_.Label } } } | ConvertTo-json', { 'shell': 'powershell.exe' }));
-                // Get drives, along with some info about them.
-                drives = JSON.parse(execSync('gwmi win32_diskdrive | select Model, CapabilityDescriptions, Index, PNPDeviceID, MediaType, SerialNumber, Size, Name, InterfaceType, BytesPerSector, Partitions, Status, SectorsPerTrack, TotalCylinders, TotalHeads, TotalSectors, TotalTracks, TracksPerCylinder, CompressionMethod, FirmwareRevision, Manufacturer | ConvertTo-json', { 'shell': 'powershell.exe' }));
-                // Enumerate the array of drives, and add the keys from getDriveLetter() to the drive objectuyhgvbkhjhj
-                drives.forEach(drive => {
-                    let dl = Helpers.getDriveLetter(drive.Index);
-                    driveArray.push({
-                        device: drive.Name,
-                        displayName: dl.DriveLetter,
-                        description: drive.Model,
-                        size: drive.Size,
-                        mountpoints: [{
-                            path: drive.DriveLetter + '/'
-                        }],
-                        raw: drive.Name,
-                        protected: dl.IsReadOnly,
-                        system: dl.BootVolume,
-                        label: dl.Label,
-                        removable: drive.MediaType === 'Removable Media'
-                    });
-                });
-                break;
-            case "darwin":
-                try {
-                    // Get list of all disks
-                    const diskListStr = execSync('diskutil list -plist').toString();
-                    const diskList = Helpers.parsePlistOutput(diskListStr);
-
-                    // Process each disk
-                    for (const diskName of diskList.AllDisksAndPartitions) {
-                        const diskInfo = Helpers.getMacOSDriveInfo('/dev/' + diskName.DeviceIdentifier);
-
-                        if (diskInfo) {
-                            const driveObject = {
-                                device: diskInfo.DeviceNode,
-                                displayName: diskInfo.DeviceNode,
-                                description: diskInfo.DeviceModel || 'Unknown',
-                                size: diskInfo.Size,
-                                mountpoints: diskInfo.MountPoint ? [{ path: diskInfo.MountPoint }] : [],
-                                raw: diskInfo.DeviceNode,
-                                protected: !diskInfo.WritableMedia,
-                                system: diskInfo.SystemImage || false,
-                                label: diskInfo.VolumeName || 'Unnamed Disk',
-                                removable: diskInfo.RemovableMedia || diskInfo.Ejectable || false,
-                                // Additional macOS-specific properties
-                                volumeType: diskInfo.VolumeType,
-                                fileSystem: diskInfo.FilesystemType,
-                                busProtocol: diskInfo.BusProtocol,
-                                smartStatus: diskInfo.SMARTStatus,
-                                bootable: diskInfo.Bootable || false
-                            };
-
-                            // We use this to filter out mounted disk images (e.g: dmg files on Mac)
-                            if (driveObject.busProtocol !== 'Disk Image') {
-                                driveArray.push(driveObject);
-                            }
-                        }
-                    }
-                } catch (error) {
-                    throw new Error(`Error getting macOS disk information: ${error.message}`);
-                }
-                break;
-            case "linux":
-                drives = JSON.parse(execSync('lsblk -J -b -s -o NAME,SIZE,RO,TYPE,MOUNTPOINT,LABEL,RM').toString());
-
-                for (const item of drives.blockdevices) {
-                    if (item.type === 'disk') {
-                        const driveLetter = `/dev/${item.name}`;
-                        const displayName = driveLetter;
-                        const description = Helpers.getDriveDescription(item.name);
-                        const isReadOnly = item.ro === '1';
-                        const isSystem = false; // For Linux, we can't directly identify the boot drive like in Windows.
-                        const removable = item.rm;
-                        let mountpoints = [];
-                        if (item.mountpoint) {
-                            mountpoints.push({ path: item.mountpoint });
-                        }
-
-                        const raw = driveLetter;
-                        const label = item.label ? item.label.trim() : 'Unnamed Disk';
-
-                        const driveObject = {
-                            device: raw,
-                            displayName,
-                            description,
-                            size: item.size,
-                            mountpoints,
-                            raw,
-                            protected: isReadOnly,
-                            system: isSystem,
-                            label,
-                            removable: removable,
-                        };
-
-                        driveArray.push(driveObject);
-                    }
-                }
-                break;
-            default:
-                throw new Error("Your OS is not supported by disklist");
-        }
+        driveArray = DrivePopulator.populateArrays();
     }
+
     static filter(options) {
         if (!options.filter || Object.keys(options.filter).length === 0) {
             return; // No filtering needed, exit early
@@ -259,4 +156,218 @@ class Helpers {
         }
     }
 
+}
+
+/**
+ * Class responsible for handling drive population across different operating systems.
+ * Supports Windows, macOS, and Linux platforms with platform-specific implementations.
+ */
+class DrivePopulator {
+    /**
+     * Main entry point for drive population. Detects the current platform and calls
+     * the appropriate population method.
+     * @returns {Array<Object>} Array of drive objects containing platform-specific drive information
+     * @throws {Error} If the current platform is not supported
+     */
+    static populateArrays() {
+        const platform = os.platform();
+        const populator = DrivePopulator.getPopulator(platform);
+        return populator();
+    }
+
+    /**
+     * Returns the appropriate drive population function for the given platform
+     * @param {string} platform - The operating system platform (win32, darwin, or linux)
+     * @returns {Function} Platform-specific drive population function
+     * @throws {Error} If the platform is not supported
+     */
+    static getPopulator(platform) {
+        const populators = {
+            win32: DrivePopulator.populateWindowsDrives,
+            darwin: DrivePopulator.populateMacOSDrives,
+            linux: DrivePopulator.populateLinuxDrives,
+        };
+
+        const populator = populators[platform];
+        if (!populator) {
+            throw new Error("Your OS is not supported by disklist");
+        }
+
+        return populator;
+    }
+
+    /**
+     * Windows-specific drive population implementation
+     * @returns {Array<Object>} Array of Windows drive objects
+     */
+    static populateWindowsDrives() {
+        // const driveLetters = DrivePopulator.getWindowsDriveLetters();
+        const drives = DrivePopulator.getWindowsDrives();
+
+        return drives.map(drive => {
+            const dl = Helpers.getDriveLetter(drive.Index);
+            return DrivePopulator.createWindowsDriveObject(drive, dl);
+        });
+    }
+
+    /**
+     * Retrieves Windows drive letters and their properties using PowerShell
+     * @returns {Array<Object>} Array of drive letter information objects
+     */
+    static getWindowsDriveLetters() {
+        const command = 'Get-CimInstance Win32_Volume | Where-Object { $_.DriveType -eq 2 -or $_.DriveType -eq 3 } | ' +
+            'ForEach-Object { if ($_.DriveLetter) { [PSCustomObject]@{ ' +
+            'DriveLetter = $_.DriveLetter; IsReadOnly = [bool]($_.Attributes -band 1); ' +
+            'BootVolume = $_.BootVolume; Label = $_.Label } } } | ConvertTo-json';
+        return JSON.parse(execSync(command, { 'shell': 'powershell.exe' }));
+    }
+
+    /**
+     * Retrieves detailed Windows drive information using PowerShell
+     * @returns {Array<Object>} Array of detailed drive information objects
+     */
+    static getWindowsDrives() {
+        const command = 'gwmi win32_diskdrive | select Model, CapabilityDescriptions, Index, PNPDeviceID, ' +
+            'MediaType, SerialNumber, Size, Name, InterfaceType, BytesPerSector, Partitions, Status, ' +
+            'SectorsPerTrack, TotalCylinders, TotalHeads, TotalSectors, TotalTracks, TracksPerCylinder, ' +
+            'CompressionMethod, FirmwareRevision, Manufacturer | ConvertTo-json';
+        return JSON.parse(execSync(command, { 'shell': 'powershell.exe' }));
+    }
+
+    /**
+     * Creates a standardized drive object from Windows-specific drive information
+     * @param {Object} drive - Windows drive information
+     * @param {Object} dl - Drive letter information
+     * @returns {Object} Standardized drive object
+     */
+    static createWindowsDriveObject(drive, dl) {
+        return {
+            device: drive.Name,
+            displayName: dl.DriveLetter,
+            description: drive.Model,
+            size: drive.Size,
+            mountpoints: [{
+                path: dl.DriveLetter + '/'
+            }],
+            raw: drive.Name,
+            protected: dl.IsReadOnly,
+            system: dl.BootVolume,
+            label: dl.Label,
+            removable: drive.MediaType === 'Removable Media'
+        };
+    }
+
+    /**
+     * macOS-specific drive population implementation
+     * @returns {Array<Object>} Array of macOS drive objects
+     */
+    static populateMacOSDrives() {
+        const diskList = DrivePopulator.getMacOSDiskList();
+        return DrivePopulator.processMacOSDisks(diskList);
+    }
+
+    /**
+     * Retrieves macOS disk list using diskutil
+     * @returns {Object} Parsed plist output containing disk information
+     */
+    static getMacOSDiskList() {
+        const diskListStr = execSync('diskutil list -plist').toString();
+        return Helpers.parsePlistOutput(diskListStr);
+    }
+
+    /**
+     * Processes macOS disk list and filters out disk images
+     * @param {Object} diskList - Parsed disk list from diskutil
+     * @returns {Array<Object>} Array of processed drive objects
+     */
+    static processMacOSDisks(diskList) {
+        const drives = [];
+        for (const disk of diskList.AllDisksAndPartitions) {
+            const driveObject = DrivePopulator.createMacOSDriveObject(disk);
+            // Filter out mounted disk images (e.g., DMG files)
+            if (driveObject && driveObject.busProtocol !== 'Disk Image') {
+                drives.push(driveObject);
+            }
+        }
+        return drives;
+    }
+
+    /**
+     * Creates a standardized drive object from macOS-specific disk information
+     * @param {Object} diskName - Disk identifier information
+     * @returns {Object|null} Standardized drive object or null if disk info cannot be retrieved
+     */
+    static createMacOSDriveObject(diskName) {
+        const diskInfo = Helpers.getMacOSDriveInfo('/dev/' + diskName.DeviceIdentifier);
+        if (!diskInfo) return null;
+
+        return {
+            device: diskInfo.DeviceNode,
+            displayName: diskInfo.DeviceNode,
+            description: diskInfo.DeviceModel || 'Unknown',
+            size: diskInfo.Size,
+            mountpoints: diskInfo.MountPoint ? [{ path: diskInfo.MountPoint }] : [],
+            raw: diskInfo.DeviceNode,
+            protected: !diskInfo.WritableMedia,
+            system: diskInfo.SystemImage || false,
+            label: diskInfo.VolumeName || 'Unnamed Disk',
+            removable: diskInfo.RemovableMedia || diskInfo.Ejectable || false,
+            // macOS-specific properties
+            volumeType: diskInfo.VolumeType,
+            fileSystem: diskInfo.FilesystemType,
+            busProtocol: diskInfo.BusProtocol,
+            smartStatus: diskInfo.SMARTStatus,
+            bootable: diskInfo.Bootable || false
+        };
+    }
+
+    /**
+     * Linux-specific drive population implementation
+     * @returns {Array<Object>} Array of Linux drive objects
+     */
+    static populateLinuxDrives() {
+        const drives = DrivePopulator.getLinuxDrives();
+        return DrivePopulator.processLinuxDrives(drives);
+    }
+
+    /**
+     * Retrieves Linux drive information using lsblk
+     * @returns {Object} Parsed JSON output from lsblk command
+     */
+    static getLinuxDrives() {
+        const command = 'lsblk -J -b -s -o NAME,SIZE,RO,TYPE,MOUNTPOINT,LABEL,RM';
+        return JSON.parse(execSync(command).toString());
+    }
+
+    /**
+     * Processes Linux drive information and filters for disk devices
+     * @param {Object} drives - Parsed output from lsblk
+     * @returns {Array<Object>} Array of processed drive objects
+     */
+    static processLinuxDrives(drives) {
+        return drives.blockdevices
+            .filter(item => item.type === 'disk')
+            .map(item => DrivePopulator.createLinuxDriveObject(item));
+    }
+
+    /**
+     * Creates a standardized drive object from Linux-specific drive information
+     * @param {Object} item - Linux block device information
+     * @returns {Object} Standardized drive object
+     */
+    static createLinuxDriveObject(item) {
+        const driveLetter = `/dev/${item.name}`;
+        return {
+            device: driveLetter,
+            displayName: driveLetter,
+            description: Helpers.getDriveDescription(item.name),
+            size: item.size,
+            mountpoints: item.mountpoint ? [{ path: item.mountpoint }] : [],
+            raw: driveLetter,
+            protected: item.ro === '1',
+            system: false, // Linux can't directly identify boot drive
+            label: item.label ? item.label.trim() : 'Unnamed Disk',
+            removable: item.rm
+        };
+    }
 }

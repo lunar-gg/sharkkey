@@ -17,24 +17,24 @@ describe("files", () => {
         fs.writeFileSync("jestFile.txt", "hello world", "utf8");
         fs.writeFileSync("jestFile2.txt", "hello world", "utf8");
         expect(shark.cryptography.encrypt(hashKey, "./jestFile.txt", {
-                features: [],
-                createIDFile: false,
-                isString: false,
-                doCopy: false,
-                userkey: "cHaNgE-mE"
-            }, true))
+            features: [],
+            createIDFile: false,
+            isString: false,
+            doCopy: false,
+            userkey: "cHaNgE-mE"
+        }, true))
             .toBe(true);
     });
     test("encrypt file with compression", () => {
         fs.writeFileSync("jestFile2.txt", "hello world", "utf8");
         expect(shark.cryptography.encrypt(hashKey, "./jestFile2.txt", {
-                features: [],
-                createIDFile: false,
-                isString: false,
-                doCopy: false,
-                userkey: "cHaNgE-mE",
-                compression: true
-            }, true))
+            features: [],
+            createIDFile: false,
+            isString: false,
+            doCopy: false,
+            userkey: "cHaNgE-mE",
+            compression: true
+        }, true))
             .toBe(true);
     });
     test("encrypt file with features", () => {
@@ -44,13 +44,13 @@ describe("files", () => {
             false,
             "./jestFile3.txt");
         expect(shark.cryptography.encrypt(localHashKey, "./jestFile3.txt", {
-                features: ['hwid', 'distro', 'lip', 'username', 'timezone', 'locale', 'hostname', 'platform', 'serial', 'filename'],
-                createIDFile: false,
-                isString: false,
-                doCopy: false,
-                userkey: "cHaNgE-mE",
-                compression: false
-            }, true))
+            features: ['hwid', 'distro', 'lip', 'username', 'timezone', 'locale', 'hostname', 'platform', 'serial', 'filename'],
+            createIDFile: false,
+            isString: false,
+            doCopy: false,
+            userkey: "cHaNgE-mE",
+            compression: false
+        }, true))
             .toBe(true);
     });
     test("encrypt file with id", () => {
@@ -60,12 +60,12 @@ describe("files", () => {
             true,
             "jestFileId.txt");
         expect(shark.cryptography.encrypt(hk, "./jestFileId.txt", {
-                features: [],
-                createIDFile: true,
-                isString: false,
-                doCopy: false,
-                userkey: "jestPass"
-            }, true))
+            features: [],
+            createIDFile: true,
+            isString: false,
+            doCopy: false,
+            userkey: "jestPass"
+        }, true))
             .toBe(true);
     });
     test("checkid file", () => {
@@ -105,12 +105,12 @@ describe("files", () => {
 describe("strings", () => {
     test("encrypt string", () => {
         expect(shark.cryptography.encrypt(hashKey, "hello", {
-                features: [],
-                createIDFile: false,
-                isString: true,
-                doCopy: false,
-                userkey: "jestPass"
-            }, false))
+            features: [],
+            createIDFile: false,
+            isString: true,
+            doCopy: false,
+            userkey: "jestPass"
+        }, false))
             .toBe(
                 "ODRmNWRmZGZkZmRmZGQ4ZDllODhkZGM1ZGZkZGNhYzg5ZTllY2FjODk5Y2U5Y2NjZGJkYmNmY2Y5ZWM5OWNjOWM3Y2VjOWNhYzc5YmM4Y2Q5ZGM2OWNjYTlhY2NjZmNjY2JjNmNiYzg5YWM2OWJjYTliY2JkYmRiY2NjZGM5Y2NjY2M2Y2NjYWM5Y2FjOWNhYzljZGNjYzljY2NkYzljYWM5Y2RjOWNkYzljZWNjYzZjOWNlY2NjZmRkZDNmNWRmZGZkZmRmZGQ5OTk2OTM5YWRkYzVkZmRkYjc5NjliOWI5YTkxZGRkM2Y1ZGZkZmRmZGZkZDk5OWE5ZThiOGE4ZDlhOGNkZGM1ZGZhNGEyZDNmNWRmZGZkZmRmZGRhYmIwYWJhZmRkYzVkZjk5OWU5MzhjOWFmNTgy"
             );
@@ -177,6 +177,7 @@ describe("fish hash", () => {
             .toBe("0b876d42c8e72587b32b443feaeac514305046146b0cc9152194c80ce53994ae0c5f8484cb3c8ea6350db144a857a3d45876371980a24f109717424cd56ba934889dc38f657a8fe499f924a51146fa8ae1a0d6d68dfed639084f261ce5fffc5a5298798fed6f230f5846d2a9d424d0a154a642d673514f8f73e62a03778af865");
     });
 });
+
 describe("disklist", () => {
     test("Check drives", () => {
         expect(typeof shark.disklist.listDrivesSync() === 'object')

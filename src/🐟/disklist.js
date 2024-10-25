@@ -38,12 +38,16 @@ export default class Disklist {
 
         // If driveArray is empty, throw error
         if (driveArray.length == 0) {
-            return { info: "No drives found." }
+            return { info: "No drives found." };
         }
+
+        /* Removed for now
         // If only one drive in array, return the object instead of an array with only one item
         if (driveArray.length == 1) {
             return driveArray[0];
         }
+         */
+
         // If not caught by above checks, return the driveArray
         return driveArray;
     }
@@ -88,6 +92,22 @@ export default class Disklist {
     }
 }
 class Helpers {
+    static parsePlistOutput(plistStr) {
+        // Convert the plist XML to JSON format using plutil
+        const jsonStr = execSync(`echo '${plistStr.replace(/'/g, '\'\\\'\'')}' | plutil -convert json -o - -`, { shell: '/bin/bash' }).toString();
+        return JSON.parse(jsonStr);
+    }
+
+    static getMacOSDriveInfo(diskName) {
+        try {
+            const infoStr = execSync(`diskutil info -plist ${diskName}`).toString();
+            return Helpers.parsePlistOutput(infoStr);
+        } catch (error) {
+            console.error(`Error getting info for disk ${diskName}:`, error);
+            return null;
+        }
+    }
+
     static getDriveLetter(index) {
         driveLettersArray.forEach(dl => { // If no drive name, set the name to Unnamed Drive
             if (dl.Label === null) dl.Label = "Unnamed Disk";
@@ -136,7 +156,45 @@ class Helpers {
                 });
                 break;
             case "darwin":
-                throw new Error("MacOS Support planned later");
+                try {
+                    // Get list of all disks
+                    const diskListStr = execSync('diskutil list -plist').toString();
+                    const diskList = Helpers.parsePlistOutput(diskListStr);
+
+                    // Process each disk
+                    for (const diskName of diskList.AllDisksAndPartitions) {
+                        const diskInfo = Helpers.getMacOSDriveInfo('/dev/' + diskName.DeviceIdentifier);
+
+                        if (diskInfo) {
+                            const driveObject = {
+                                device: diskInfo.DeviceNode,
+                                displayName: diskInfo.DeviceNode,
+                                description: diskInfo.DeviceModel || 'Unknown',
+                                size: diskInfo.Size,
+                                mountpoints: diskInfo.MountPoint ? [{ path: diskInfo.MountPoint }] : [],
+                                raw: diskInfo.DeviceNode,
+                                protected: !diskInfo.WritableMedia,
+                                system: diskInfo.SystemImage || false,
+                                label: diskInfo.VolumeName || 'Unnamed Disk',
+                                removable: diskInfo.RemovableMedia || diskInfo.Ejectable || false,
+                                // Additional macOS-specific properties
+                                volumeType: diskInfo.VolumeType,
+                                fileSystem: diskInfo.FilesystemType,
+                                busProtocol: diskInfo.BusProtocol,
+                                smartStatus: diskInfo.SMARTStatus,
+                                bootable: diskInfo.Bootable || false
+                            };
+
+                            // We use this to filter out mounted disk images (e.g: dmg files on Mac)
+                            if (driveObject.busProtocol !== 'Disk Image') {
+                                driveArray.push(driveObject);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    throw new Error(`Error getting macOS disk information: ${error.message}`);
+                }
+                break;
             case "linux":
                 drives = JSON.parse(execSync('lsblk -J -b -s -o NAME,SIZE,RO,TYPE,MOUNTPOINT,LABEL,RM').toString());
 

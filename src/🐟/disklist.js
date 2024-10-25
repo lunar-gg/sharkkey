@@ -109,11 +109,14 @@ class Helpers {
     }
 
     static getDriveLetter(index) {
-        driveLettersArray.forEach(dl => { // If no drive name, set the name to Unnamed Drive
-            if (dl.Label === null) dl.Label = "Unnamed Disk";
-        });
-        return driveLettersArray[index];
+        if (driveLettersArray.length > 0) {
+            driveLettersArray.forEach(dl => { // If no drive name, set the name to Unnamed Drive
+                if (dl.Label === null) dl.Label = "Unnamed Disk";
+            });
+            return driveLettersArray[index];
+        }
     }
+
     static getDriveDescription(deviceName) {
         try {
             const udevadmOutput = execSync(`udevadm info --query=property --name=${deviceName}`).toString();

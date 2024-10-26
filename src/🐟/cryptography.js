@@ -50,155 +50,155 @@ class Cryptography {
          * Uses shake128, shifting, and string mutations to get the desired 64 bit output
          */
         static fish64(data, inputEncoding = "utf8", short = false) {
-                /** @type {string} shake128 hash of data */
-                let baseHash = crypto.createHash('shake128')
-                    .update(data, inputEncoding)
-                    .digest('hex');
+            /** @type {string} shake128 hash of data */
+            let baseHash = crypto.createHash('shake128')
+                .update(data, inputEncoding)
+                .digest('hex');
 
-                /** @type {string[]} array of strings, containing different parts of baseHash */
-                let shitedHashParts = [
-                    Cryptography.shift(baseHash.slice(0, 8)),
-                    Cryptography.shift(baseHash.slice(8, 16)),
-                    Cryptography.shift(baseHash.slice(16, 24)),
-                    Cryptography.shift(baseHash.slice(24, 32))
-                ];
+            /** @type {string[]} array of strings, containing different parts of baseHash */
+            let shitedHashParts = [
+                Cryptography.shift(baseHash.slice(0, 8)),
+                Cryptography.shift(baseHash.slice(8, 16)),
+                Cryptography.shift(baseHash.slice(16, 24)),
+                Cryptography.shift(baseHash.slice(24, 32))
+            ];
 
-                /** 
-                 * combines and shifts the shiftedHashParts into one hash
-                 * @type {string} 
-                 * combines first and third part of the shiftedHash, hashes them using shake128,
-                 * then shifts the hash
-                 * combines second and fourth part of the shiftedHash, hashes them using shake128,
-                 * then shifts the hash
-                 * 
-                 * combines those two, shifts them, and hashes them using shake128
-                 */
+            /** 
+             * combines and shifts the shiftedHashParts into one hash
+             * @type {string} 
+             * combines first and third part of the shiftedHash, hashes them using shake128,
+             * then shifts the hash
+             * combines second and fourth part of the shiftedHash, hashes them using shake128,
+             * then shifts the hash
+             * 
+             * combines those two, shifts them, and hashes them using shake128
+             */
 
-                let shiftedCombinedHashes = crypto.createHash('shake128').update(
-                    Cryptography.shift(
-                        crypto.createHash('shake128')
+            let shiftedCombinedHashes = crypto.createHash('shake128').update(
+                Cryptography.shift(
+                    crypto.createHash('shake128')
                         .update(`${shitedHashParts[0]}${shitedHashParts[2]}`)
                         .digest('hex')
-                    ).toString() +
-                    Cryptography.shift(
-                        crypto.createHash('shake128')
+                ).toString() +
+                Cryptography.shift(
+                    crypto.createHash('shake128')
                         .update(`${shitedHashParts[1]}${shitedHashParts[3]}`)
                         .digest('hex')
-                    ).toString()
+                ).toString()
 
-                ).digest('hex');
+            ).digest('hex');
 
-                /** 
-                 * gets the middle part of shiftedCombinedHashes,
-                 * shifts it,
-                 * and then shifts that output, and then returns it.
-                 * @type {string} */
-                if (short) {
-                    // truncate the output to 16 chars // 32 byte
-                    return Cryptography.shift(
-                        Cryptography.shift(
-                            shiftedCombinedHashes.substring(8, 24)
-                        )
-                    );
-                } else {
-                    return Cryptography.shift(
-                        Cryptography.shift(
-                            shiftedCombinedHashes
-                        )
-                    );
-                }
+            /** 
+             * gets the middle part of shiftedCombinedHashes,
+             * shifts it,
+             * and then shifts that output, and then returns it.
+             * @type {string} */
+            if (short) {
+                // truncate the output to 16 chars // 32 byte
+                return Cryptography.shift(
+                    Cryptography.shift(
+                        shiftedCombinedHashes.substring(8, 24)
+                    )
+                );
+            } else {
+                return Cryptography.shift(
+                    Cryptography.shift(
+                        shiftedCombinedHashes
+                    )
+                );
+            }
 
-            } // baseHashLength 32, outputHashLength 16 // 32 (depends on short true\false)
+        } // baseHashLength 32, outputHashLength 16 // 32 (depends on short true\false)
         static fish128(data, inputEncoding = "utf8") {
-                let baseHash = crypto.createHash('shake128', { outputLength: 32 })
-                    .update(data, inputEncoding)
-                    .digest('hex');
-                let shiftedHashParts = [
-                    Cryptography.shift(baseHash.slice(0, 16)),
-                    Cryptography.shift(baseHash.slice(16, 32)),
-                    Cryptography.shift(baseHash.slice(32, 48)),
-                    Cryptography.shift(baseHash.slice(48, 64))
-                ];
+            let baseHash = crypto.createHash('shake128', { outputLength: 32 })
+                .update(data, inputEncoding)
+                .digest('hex');
+            let shiftedHashParts = [
+                Cryptography.shift(baseHash.slice(0, 16)),
+                Cryptography.shift(baseHash.slice(16, 32)),
+                Cryptography.shift(baseHash.slice(32, 48)),
+                Cryptography.shift(baseHash.slice(48, 64))
+            ];
 
-                let shiftedCombinedHashes = crypto.createHash('shake128', { outputLength: 32 }).update(
-                    Cryptography.shift(
-                        crypto.createHash('shake128')
+            let shiftedCombinedHashes = crypto.createHash('shake128', { outputLength: 32 }).update(
+                Cryptography.shift(
+                    crypto.createHash('shake128')
                         .update(`${shiftedHashParts[0]}${shiftedHashParts[2]}`)
                         .digest('hex')
-                    ).toString() +
-                    Cryptography.shift(
-                        crypto.createHash('shake128')
+                ).toString() +
+                Cryptography.shift(
+                    crypto.createHash('shake128')
                         .update(`${shiftedHashParts[1]}${shiftedHashParts[3]}`)
                         .digest('hex')
-                    ).toString()
-                ).digest('hex');
+                ).toString()
+            ).digest('hex');
 
-                return Cryptography.shift(
-                    Cryptography.shift(
-                        shiftedCombinedHashes
-                    )
-                );
-            } // baseHashLength 64, outputHashLength 64
+            return Cryptography.shift(
+                Cryptography.shift(
+                    shiftedCombinedHashes
+                )
+            );
+        } // baseHashLength 64, outputHashLength 64
         static fish256(data, inputEncoding = "utf8") {
-                let baseHash = crypto.createHash('shake256', { outputLength: 64 })
-                    .update(data, inputEncoding)
-                    .digest('hex');
+            let baseHash = crypto.createHash('shake256', { outputLength: 64 })
+                .update(data, inputEncoding)
+                .digest('hex');
 
-                let shiftedHashParts = [
-                    Cryptography.shift(baseHash.slice(0, 32)),
-                    Cryptography.shift(baseHash.slice(32, 64)),
-                    Cryptography.shift(baseHash.slice(64, 96)),
-                    Cryptography.shift(baseHash.slice(96, 128))
-                ];
-                let shiftedCombinedHashes = crypto.createHash('shake256', { outputLength: 64 }).update(
-                    Cryptography.shift(
-                        crypto.createHash('shake256')
+            let shiftedHashParts = [
+                Cryptography.shift(baseHash.slice(0, 32)),
+                Cryptography.shift(baseHash.slice(32, 64)),
+                Cryptography.shift(baseHash.slice(64, 96)),
+                Cryptography.shift(baseHash.slice(96, 128))
+            ];
+            let shiftedCombinedHashes = crypto.createHash('shake256', { outputLength: 64 }).update(
+                Cryptography.shift(
+                    crypto.createHash('shake256')
                         .update(`${shiftedHashParts[0]}${shiftedHashParts[2]}`)
                         .digest('hex')
-                    ).toString() +
-                    Cryptography.shift(
-                        crypto.createHash('shake256')
+                ).toString() +
+                Cryptography.shift(
+                    crypto.createHash('shake256')
                         .update(`${shiftedHashParts[1]}${shiftedHashParts[3]}`)
                         .digest('hex')
-                    ).toString()
-                ).digest('hex');
+                ).toString()
+            ).digest('hex');
 
-                return Cryptography.shift(
-                    Cryptography.shift(
-                        shiftedCombinedHashes
-                    )
-                );
-            } // baseHashLength 128, outputHashLength 128
+            return Cryptography.shift(
+                Cryptography.shift(
+                    shiftedCombinedHashes
+                )
+            );
+        } // baseHashLength 128, outputHashLength 128
         static fish512(data, inputEncoding = "utf8") {
-                let baseHash = crypto.createHash('shake256', { outputLength: 128 })
-                    .update(data, inputEncoding)
-                    .digest('hex');
-                let shiftedHashParts = [
-                    Cryptography.shift(baseHash.slice(0, 64)),
-                    Cryptography.shift(baseHash.slice(64, 128)),
-                    Cryptography.shift(baseHash.slice(128, 192)),
-                    Cryptography.shift(baseHash.slice(192, 256))
-                ];
+            let baseHash = crypto.createHash('shake256', { outputLength: 128 })
+                .update(data, inputEncoding)
+                .digest('hex');
+            let shiftedHashParts = [
+                Cryptography.shift(baseHash.slice(0, 64)),
+                Cryptography.shift(baseHash.slice(64, 128)),
+                Cryptography.shift(baseHash.slice(128, 192)),
+                Cryptography.shift(baseHash.slice(192, 256))
+            ];
 
-                let shiftedCombinedHashes = crypto.createHash('shake256', { outputLength: 128 }).update(
-                    Cryptography.shift(
-                        crypto.createHash('shake256')
+            let shiftedCombinedHashes = crypto.createHash('shake256', { outputLength: 128 }).update(
+                Cryptography.shift(
+                    crypto.createHash('shake256')
                         .update(`${shiftedHashParts[0]}${shiftedHashParts[2]}`)
                         .digest('hex')
-                    ).toString() +
-                    Cryptography.shift(
-                        crypto.createHash('shake256')
+                ).toString() +
+                Cryptography.shift(
+                    crypto.createHash('shake256')
                         .update(`${shiftedHashParts[1]}${shiftedHashParts[3]}`)
                         .digest('hex')
-                    ).toString()
-                ).digest('hex');
+                ).toString()
+            ).digest('hex');
 
-                return Cryptography.shift(
-                    Cryptography.shift(
-                        shiftedCombinedHashes
-                    )
-                );
-            } // baseHashLength 256, outputHashLength 256
+            return Cryptography.shift(
+                Cryptography.shift(
+                    shiftedCombinedHashes
+                )
+            );
+        } // baseHashLength 256, outputHashLength 256
     };
 
     /**
@@ -715,7 +715,7 @@ class Cryptography {
             case true:
                 dataToEncrypt = data;
                 break;
-                // If we want to encrypt a file
+            // If we want to encrypt a file
             case false:
                 dataToEncrypt = fs.readFileSync(data, "utf8");
                 break;
@@ -807,11 +807,11 @@ class Cryptography {
 
         const {
             features = [],
-                createIDFile = false,
-                isString = false,
-                doCopy = false,
-                userkey = 'cHaNgE-mE',
-                compression = false
+            createIDFile = false,
+            isString = false,
+            doCopy = false,
+            userkey = 'cHaNgE-mE',
+            compression = false
         } = options;
 
         let encrypted = Cryptography.encryptData(data, key, isString, features);
@@ -993,26 +993,26 @@ class Cryptography {
      * @returns {object} ID Object
      */
     static checkid(file, key, doCopy = false) {
-            if (fs.existsSync(file)) {
-                let id;
-                let fileData = fs.readFileSync(file, 'utf8');
-                try { // Try to decrypt
-                    id = Cryptography.object.decryptObject(key, fileData);
-                } catch (err) { // 99% chance of it being cased by using the incorrect password, but log to console just in case.
-                    console.log(err);
-                    throw new Error("An error occured while trying to decrypt the file info! - Have you entered the right password?");
-                }
-                if (doCopy) {
-                    // Stringify the id object and copy it to the clipboard
-                    clipboard.writeSync(JSON.stringify(id, null, 2));
-                }
-                return id; // Return the id object
-            } else // 🦈--> This is not serious enough to stop the program, so write an exception handler on the other end.
-            { throw new Error("File does not exist."); }
-        }
-        /**
-         * Class to work with USB Hard drives for verification
-         */
+        if (fs.existsSync(file)) {
+            let id;
+            let fileData = fs.readFileSync(file, 'utf8');
+            try { // Try to decrypt
+                id = Cryptography.object.decryptObject(key, fileData);
+            } catch (err) { // 99% chance of it being cased by using the incorrect password, but log to console just in case.
+                console.log(err);
+                throw new Error("An error occured while trying to decrypt the file info! - Have you entered the right password?");
+            }
+            if (doCopy) {
+                // Stringify the id object and copy it to the clipboard
+                clipboard.writeSync(JSON.stringify(id, null, 2));
+            }
+            return id; // Return the id object
+        } else // 🦈--> This is not serious enough to stop the program, so write an exception handler on the other end.
+        { throw new Error("File does not exist."); }
+    }
+    /**
+     * Class to work with USB Hard drives for verification
+     */
     static usb = class {
         /**
          * @param {boolean} [useUnsafeIdentifiers=false] Wether or not to use unsafe drive identifiers that might change, such as display name, mountpoints, and label
@@ -1024,6 +1024,11 @@ class Cryptography {
             try {
                 const drives = drivelist.listDrivesSync({ returnOnlyRemovable: false });
                 let drive = drives.find(_drive => _drive.removable && !_drive.system);
+
+                if (!drive) {
+                    throw new Error("No removable drive found");
+                }
+
                 let driveHashString;
                 switch (useUnsafeIdentifiers) {
                     case true:
@@ -1032,10 +1037,11 @@ class Cryptography {
                             drive.removable + drive.system + drive.protected;
                         break;
                     case false:
-                        driveHashString = drive.size + drive.removable +
+                        driveHashString = `${drive.size}` + drive.removable +
                             drive.system + drive.protected;
                         break;
                 }
+
                 driveHashString = Buffer.from(encodeURIComponent(driveHashString.replace(/ /g, ""))).toString("hex");
                 return {
                     displayName: drive.displayName,

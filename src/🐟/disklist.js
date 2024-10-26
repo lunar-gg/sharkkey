@@ -108,6 +108,17 @@ class Helpers {
         }
     }
 
+    static getDriveNameMacOS(diskName) {
+        try {
+            const infoStr = execSync(`diskutil info -plist ${diskName}s1`).toString();
+            const parsed = Helpers.parsePlistOutput(infoStr);
+            return parsed.VolumeName || parsed.MediaName || 'Unnamed Disk';
+        } catch (error) {
+            console.error(`Error getting name for disk ${diskName}:`, error);
+            return null;
+        }
+    }
+
     static getDriveLetter(index) {
         if (driveLettersArray.length > 0) {
             driveLettersArray.forEach(dl => { // If no drive name, set the name to Unnamed Drive
@@ -303,17 +314,18 @@ class DrivePopulator {
     static createMacOSDriveObject(diskName) {
         const diskInfo = Helpers.getMacOSDriveInfo('/dev/' + diskName.DeviceIdentifier);
         if (!diskInfo) return null;
+        if (diskInfo.BusProtocol === 'Disk Image') return null;
 
         return {
             device: diskInfo.DeviceNode,
-            displayName: diskInfo.DeviceNode,
-            description: diskInfo.DeviceModel || 'Unknown',
+            displayName: Helpers.getDriveNameMacOS("/dev/" + diskInfo.DeviceIdentifier) || 'Unnamed Disk',
+            description: diskInfo.MediaName || diskInfo.IORegistryEntryName || 'Unknown',
             size: diskInfo.Size,
             mountpoints: diskInfo.MountPoint ? [{ path: diskInfo.MountPoint }] : [],
             raw: diskInfo.DeviceNode,
             protected: !diskInfo.WritableMedia,
             system: diskInfo.SystemImage || false,
-            label: diskInfo.VolumeName || 'Unnamed Disk',
+            label: diskInfo.VolumeName || diskInfo.MediaName || 'Unnamed Disk',
             removable: diskInfo.RemovableMedia || diskInfo.Ejectable || false,
             // macOS-specific properties
             volumeType: diskInfo.VolumeType,

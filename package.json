@@ -24,7 +24,7 @@
     "dependencies": {
         "clipboardy": "^3.0.0",
         "commander": "^11.0.0",
-        "esbuild": "0.18.13",
+        "esbuild": "0.20.1",
         "ip": "^1.1.8",
         "md6-hash": "^1.0.0",
         "node-machine-id": "^1.1.12",
